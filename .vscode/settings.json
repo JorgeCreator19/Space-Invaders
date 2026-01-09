@@ -5,14 +5,14 @@
         "lib",
         "utils",
         "game",
+        "entities",
         "examples",
         "docs",
         "scripts",
         "resources",
         "config",
         "assets",
-        "models",
-        "entities"
+        "models"
     ],
     "java.project.outputPath": "bin"
 }
