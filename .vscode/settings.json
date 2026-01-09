@@ -1,0 +1,18 @@
+{
+    "java.project.sourcePaths": [
+        "src",
+        "test",
+        "lib",
+        "utils",
+        "examples",
+        "docs",
+        "scripts",
+        "resources",
+        "config",
+        "assets",
+        "game",
+        "models",
+        "entities"
+    ],
+    "java.project.outputPath": "bin"
+}
