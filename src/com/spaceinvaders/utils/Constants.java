@@ -37,6 +37,12 @@ public final class Constants {
     public static final int ALIEN_DROP_DISTANCE = 20; // Px to drop when reversing
     public static final double ALIEN_SHOOT_CHANCE = 0.002; // 0.2% chance per frame to shoot
 
+    /* Mystery Ship */
+    public static final int MYSTERY_SHIP_WIDTH = 60; // 60 px
+    public static final int MYSTERY_SHIP_HEIGHT = 25; // 25 px
+    public static final int MYSTERY_SHIP_SPEED = 3; // 3 px per frame
+    public static final double MYSTERY_SHIP_SPAWN_CHANCE = 0.001; // 0.1% chance per frame
+
     /* SCORING */
     public static final int SCORE_ROW_1 = 10; // Botton rows = 10 score
     public static final int SCORE_ROW_2 = 30; // Midle rows = 30 score
