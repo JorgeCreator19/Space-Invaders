@@ -1,9 +1,8 @@
 package com.spaceinvaders.entities;
 
+import com.spaceinvaders.utils.Constants;
 import java.awt.Color;
 import java.awt.Graphics2D;
-
-import com.spaceinvaders.utils.Constants;
 
 /**
  * The player spaceship

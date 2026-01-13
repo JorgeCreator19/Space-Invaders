@@ -36,7 +36,7 @@ public class Bullet extends GameObject {
         y += velocityY;
 
         // Desactivate if off screen (if is top or bottom)
-        if (y < height || y > Constants.WINDOW_HEIGHT) {
+        if (y < -height || y > Constants.WINDOW_HEIGHT) {
             destroy();
         }
     }
