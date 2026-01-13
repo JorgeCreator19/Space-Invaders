@@ -82,4 +82,10 @@ public abstract class GameObject {
 
     public double getCenterX() { return x + width / 2.0; }
     public double getCenterY() { return y + height / 2.0; }
+
+    public double getVelocityX() { return velocityX; }
+    public double setVelocityX(double velocityX) { return this.velocityX = velocityX; }
+    
+    public double getVelocityY() { return velocityY; }
+    public void setVelocityY(double velocityY) { this.velocityY = velocityY; }
 }
