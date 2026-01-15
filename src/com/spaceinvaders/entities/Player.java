@@ -100,13 +100,9 @@ public class Player extends GameObject {
     }
 
     /* Setters for movement flags */
-    public void setMovingLeft(boolean moving) {
-        this.movingLeft = moving;
-    }
+    public void setMovingLeft(boolean moving) { this.movingLeft = moving; }
 
-    public void setMovingRight(boolean moving) {
-        this.movingRight = moving;
-    }
+    public void setMovingRight(boolean moving) { this.movingRight = moving; }
 
     /**
      * Reset player to starting position
