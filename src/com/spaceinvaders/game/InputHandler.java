@@ -108,9 +108,7 @@ public class InputHandler implements KeyListener {
      * Required by KeyListener
      */
     @Override
-    public void keyTyped(KeyEvent e) {
-        // Not used
-    }
+    public void keyTyped(KeyEvent e) {} // Not used
 
     /* GETTERS for continuous actions (hold keys) */
 

@@ -65,152 +65,143 @@ public class Alien extends GameObject {
     }
 
     /**
-     * Draw TOP row alien (Octopus)
+     * Draw TOP row alien (Octopus) - Purple
      */
     private void drawTopAlien(Graphics2D g2d) {
         g2d.setColor(COLOR_TOP);
-        int px = (int) x;
-        int py = (int) y;
 
-        // Row 0
-        drawPixel(g2d, px + 4, py);
-        drawPixel(g2d, px + 5, py);
-        drawPixel(g2d, px + 6, py);
-        drawPixel(g2d, px + 7, py);
+        // Row 0:     ████
+        drawPixel(g2d, 4, 0);
+        drawPixel(g2d, 5, 0);
+        drawPixel(g2d, 6, 0);
+        drawPixel(g2d, 7, 0);
 
-        // Row 1
-        for (int i = 2; i <= 9; i++){
-            drawPixel(g2d, px + i, py + 1);
-        }
-
-        // Row 2
-        drawPixel(g2d, px + 2, py + 2);
-        drawPixel(g2d, px + 3, py + 2);
-        drawPixel(g2d, px + 5, py + 2);
-        drawPixel(g2d, px + 6, py + 2);
-        drawPixel(g2d, px + 8, py + 2);
-        drawPixel(g2d, px + 9, py + 2);
-
-        // Row 3
+        // Row 1:   ████████
         for (int i = 2; i <= 9; i++) {
-            drawPixel(g2d, px + i, py + 3);
+            drawPixel(g2d, i, 1);
         }
 
-        // Row 4
-        drawPixel(g2d, px + 3, py + 4);
-        drawPixel(g2d, px + 8, py + 4);
+        // Row 2:   ██ ██ ██
+        drawPixel(g2d, 2, 2);
+        drawPixel(g2d, 3, 2);
+        drawPixel(g2d, 5, 2);
+        drawPixel(g2d, 6, 2);
+        drawPixel(g2d, 8, 2);
+        drawPixel(g2d, 9, 2);
 
-        // Row 5
-        drawPixel(g2d, px + 2, py + 5);
-        drawPixel(g2d, px + 9, py + 5);
+        // Row 3:   ████████
+        for (int i = 2; i <= 9; i++) {
+            drawPixel(g2d, i, 3);
+        }
+
+        // Row 4:    █    █
+        drawPixel(g2d, 3, 4);
+        drawPixel(g2d, 8, 4);
+
+        // Row 5:   █      █
+        drawPixel(g2d, 2, 5);
+        drawPixel(g2d, 9, 5);
     }
 
     /**
-     * Draw middle row alien (Crab)
+     * Draw middle row alien (Crab) - Cyan
      */
     private void drawMiddleAlien(Graphics2D g2d) {
         g2d.setColor(COLOR_MIDDLE);
-        int px = (int) x;
-        int py = (int) y;
 
-        // Row 0
-        drawPixel(g2d, px + 2, py);
-        drawPixel(g2d, px + 9, py);
+        // Row 0:   █      █
+        drawPixel(g2d, 2, 0);
+        drawPixel(g2d, 9, 0);
 
-        // Row 1
+        // Row 1:    ██████
         for (int i = 3; i <= 8; i++) {
-            drawPixel(g2d, px + i, py + 1);
+            drawPixel(g2d, i, 1);
         }
 
-        // Row 2
+        // Row 2:   ████████
         for (int i = 2; i <= 9; i++) {
-            drawPixel(g2d, px + i, py + 2);
+            drawPixel(g2d, i, 2);
         }
 
-        // Row 3 - eyes are gaps
-        drawPixel(g2d, px + 2, py + 3);
-        drawPixel(g2d, px + 4, py + 3);
-        drawPixel(g2d, px + 5, py + 3);
-        drawPixel(g2d, px + 6, py + 3);
-        drawPixel(g2d, px + 7, py + 3);
-        drawPixel(g2d, px + 9, py + 3);
+        // Row 3:   █ ████ █ (eyes are gaps)
+        drawPixel(g2d, 2, 3);
+        drawPixel(g2d, 4, 3);
+        drawPixel(g2d, 5, 3);
+        drawPixel(g2d, 6, 3);
+        drawPixel(g2d, 7, 3);
+        drawPixel(g2d, 9, 3);
 
-        // Row 4
+        // Row 4:   ████████
         for (int i = 2; i <= 9; i++) {
-            drawPixel(g2d, px + i, py + 4);
+            drawPixel(g2d, i, 4);
         }
 
-        // Row 5
-        drawPixel(g2d, px + 3, py + 5);
-        drawPixel(g2d, px + 8, py + 5);
+        // Row 5:    █    █
+        drawPixel(g2d, 3, 5);
+        drawPixel(g2d, 8, 5);
     }
 
     /**
-     * Draw bottom row alien (Squid)
+     * Draw bottom row alien (Squid) - Green
      */
     private void drawBottomAlien(Graphics2D g2d) {
         g2d.setColor(COLOR_BOTTOM);
-        int px = (int) x;
-        int py = (int) y;
-
-        // Row 0
-        drawPixel(g2d, px + 4, py);
-        drawPixel(g2d, px + 5, py);
-        drawPixel(g2d, px + 6, py);
-        drawPixel(g2d, px + 7, py);
-
-        // Row 1
+    
+        // Row 0:     ████
+        drawPixel(g2d, 4, 0);
+        drawPixel(g2d, 5, 0);
+        drawPixel(g2d, 6, 0);
+        drawPixel(g2d, 7, 0);
+    
+        // Row 1:   ████████
         for (int i = 2; i <= 9; i++) {
-            drawPixel(g2d, px + i, py + 1);
+            drawPixel(g2d, i, 1);
         }
-
-        // Row 2
+    
+        // Row 2:   ████████
         for (int i = 2; i <= 9; i++) {
-            drawPixel(g2d, px + i, py + 2);
+            drawPixel(g2d, i, 2);
         }
-
-        // Row 3 - eyes are gaps
-        drawPixel(g2d, px + 3, py + 3);
-        drawPixel(g2d, px + 5, py + 3);
-        drawPixel(g2d, px + 6, py + 3);
-        drawPixel(g2d, px + 8, py + 3);
-
-        // Row 4
-        drawPixel(g2d, px + 2, py + 4);
-        drawPixel(g2d, px + 9, py + 4);
-
-        // Row 5
-        drawPixel(g2d, px + 3, py + 5);
-        drawPixel(g2d, px + 8, py + 5);
+    
+        // Row 3:    █ ██ █ (eyes are gaps)
+        drawPixel(g2d, 3, 3);
+        drawPixel(g2d, 5, 3);
+        drawPixel(g2d, 6, 3);
+        drawPixel(g2d, 8, 3);
+    
+        // Row 4:   █      █
+        drawPixel(g2d, 2, 4);
+        drawPixel(g2d, 9, 4);
+    
+        // Row 5:    █    █
+        drawPixel(g2d, 3, 5);
+        drawPixel(g2d, 8, 5);
     }
 
     /**
-     * Helper method to draw a single "Pixel" (actually this is a small square)
-     */
-    private void drawPixel(Graphics2D g2d, int gridX, int gridY) {
-        g2d.fillRect(gridX * PIXEL, gridY * PIXEL, PIXEL, PIXEL);
+    * Helper method to draw a single "Pixel" at grid position relative to alien
+    * @param g2d Graphics context
+    * @param offsetX Grid offset from alien's left edge (0-9)
+    * @param offsetY Grid offset from alien's top edge (0-5)
+    */
+    private void drawPixel(Graphics2D g2d, int offsetX, int offsetY) {
+        int drawX = (int) x + offsetX * PIXEL;
+        int drawY = (int) y + offsetY * PIXEL;
+        g2d.fillRect(drawX, drawY, PIXEL, PIXEL);
     }
 
     /* GETTERS */
-    public int getPoints() {
-        return points;
-    }
+    public int getPoints() { return points; }
 
-    public int getRow() {
-        return row;
-    }
+    public int getRow() { return row; }
 
     /**
      * Get X position for spawning bullet (center of alien)
      */
-    public double getBulletSpawnX() {
-        return x + width / 2 - Constants.BULLET_WIDTH / 2;
-    }
+    public double getBulletSpawnX() { return x + width / 2 - Constants.BULLET_WIDTH / 2; }
 
     /** 
      * Get Y position for spawning bullet (bottom of alien)
      */
-    public double getBulletSpawnY() {
-        return y + height;
-    }
+    public double getBulletSpawnY() {  return y + height; }
 }

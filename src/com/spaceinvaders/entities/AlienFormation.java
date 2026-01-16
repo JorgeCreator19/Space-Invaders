@@ -25,6 +25,9 @@ public class AlienFormation {
     // Random for alien shooting
     private Random random;
 
+    // Current shoot chance (increases each wave)
+    private double shootChance;
+
     /**
      * Constructor - creates the alien formation 
      */
@@ -33,6 +36,7 @@ public class AlienFormation {
         direction = 1;
         speed = Constants.ALIEN_SPEED;
         random = new Random();
+        shootChance = Constants.ALIEN_SHOOT_CHANCE_BASE;
 
         createFormation();
     }
@@ -132,7 +136,7 @@ public class AlienFormation {
         }
 
         // Random chance to shoot
-        if (random.nextDouble() < Constants.ALIEN_SHOOT_CHANCE) {
+        if (random.nextDouble() < shootChance) {
             // Pick random alien to shoot
             Alien shooter = activeAliens.get(random.nextInt(activeAliens.size()));
             return new Bullet(
@@ -143,6 +147,19 @@ public class AlienFormation {
         }
 
         return null;
+    }
+
+    /**
+     * Increase difficulty for next wave
+     * Called when starting a new wave
+     */
+    public void nextWaveDifficulty() {
+        // Increase shoot chance, but don't exceed maximum
+        shootChance += Constants.ALIEN_SHOOT_CHANCE_INCREMENT;
+    
+        if (shootChance > Constants.ALIEN_SHOOT_CHANCE_MAX) {
+        shootChance = Constants.ALIEN_SHOOT_CHANCE_MAX;
+        }
     }
 
     /**
@@ -177,9 +194,22 @@ public class AlienFormation {
      * Increase speed - called when an alien dies
      */
     public void increaseSpeed() {
-        // More aliens dead = faster speed
-        int deadCount = (Constants.ALIEN_ROWS * Constants.ALIEN_COLUMNS) - getAliveCount();
-        speed = Constants.ALIEN_SPEED + (deadCount / 10);
+        int totalAliens = Constants.ALIEN_ROWS * Constants.ALIEN_COLUMNS;  // 55
+        int aliveCount = getAliveCount();
+
+        // Calculate speed based on percentage of aliens remaining
+        // More aliens dead = faster speed, but with a cap
+        if (aliveCount > 40) {
+            speed = Constants.ALIEN_SPEED;          // Normal speed (55-41 aliens)
+        } else if (aliveCount > 25) {
+            speed = Constants.ALIEN_SPEED + 1;      // Slightly faster (40-26 aliens)
+        } else if (aliveCount > 10) {
+            speed = Constants.ALIEN_SPEED + 1;      // Faster (25-11 aliens)
+        } else if (aliveCount > 5) {
+            speed = Constants.ALIEN_SPEED + 2;      // Fast (10-6 aliens)
+        } else {
+            speed = Constants.ALIEN_SPEED + 2;      // Very fast (5-1 aliens)
+        }
     }
 
     /**
@@ -192,9 +222,17 @@ public class AlienFormation {
     }
 
     /**
+     * Full reset for new game (resets difficulty too)
+     */
+    public void fullReset() {
+        direction = 1;
+        speed = Constants.ALIEN_SPEED;
+        shootChance = Constants.ALIEN_SHOOT_CHANCE_BASE;  // Reset to starting difficulty
+        createFormation();
+    }
+
+    /**
      * Get the list of aliens (for collision detection)
      */
-    public List<Alien> getAliens() {
-        return aliens;
-    }
+    public List<Alien> getAliens() { return aliens; }
 }

@@ -127,16 +127,12 @@ public class MysteryShip extends GameObject {
     /**
      * Get points value
      */
-    public int getPoints() {
-        return points;
-    }
+    public int getPoints() { return points; }
     
     /**
      * Static method to check if UFO should spawn this frame
      */
-    public static boolean shouldSpawn() {
-        return random.nextDouble() < SPAWN_CHANCE;
-    }
+    public static boolean shouldSpawn() { return random.nextDouble() < SPAWN_CHANCE; }
 
     /**
      * Static method to create a new UFO (random direction)

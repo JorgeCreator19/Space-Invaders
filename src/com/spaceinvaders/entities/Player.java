@@ -79,9 +79,7 @@ public class Player extends GameObject {
     /**
      * Record that player just shot
      */
-    public void shoot() {
-        lastShotTime = System.currentTimeMillis(); // Set to current time
-    }
+    public void shoot() { lastShotTime = System.currentTimeMillis(); } // Set to current time
 
     /**
      * Get X position where bullet should spawn

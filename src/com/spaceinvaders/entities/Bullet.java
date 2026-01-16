@@ -56,7 +56,5 @@ public class Bullet extends GameObject {
     /**
      * Check if this is a player bullet
      */
-    public boolean isPlayerBullet() {
-        return isPlayerBullet;
-    }
+    public boolean isPlayerBullet() { return isPlayerBullet; }
 }

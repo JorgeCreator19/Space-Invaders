@@ -80,7 +80,7 @@ public class GamePanel extends JPanel implements ActionListener {
      */
     private void startGame() {
         player.reset();
-        alienFormation.reset();
+        alienFormation.fullReset();
         bullets.clear();
         mysteryShip = null;
 
@@ -95,6 +95,7 @@ public class GamePanel extends JPanel implements ActionListener {
      */
     private void nextWave() {
         wave++;
+        alienFormation.nextWaveDifficulty(); // Increase difficulty
         alienFormation.reset();
         bullets.clear();
         mysteryShip = null;
@@ -235,6 +236,12 @@ public class GamePanel extends JPanel implements ActionListener {
         // Check win condition (all aliens dead)
         if (alienFormation.getAliveCount() == 0) {
             gameState = GameState.VICTORY;
+
+            // While lives <= 3 add one live when the wave is complete
+            if (lives < Constants.INITIAL_LIVES) {
+                lives++;
+            }
+            return;
         }
 
         // Check lose condition (aliens reached bottom)
@@ -281,7 +288,7 @@ public class GamePanel extends JPanel implements ActionListener {
 
         // Alien bullets vs Player
         for (Bullet bullet : bullets) {
-            if (bullet.isPlayerBullet() || bullet.isActive()) continue;
+            if (bullet.isPlayerBullet() || !bullet.isActive()) continue;
 
             if (bullet.collidesWith(player)) {
                 bullet.destroy();

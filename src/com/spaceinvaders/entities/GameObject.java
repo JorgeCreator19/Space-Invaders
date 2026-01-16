@@ -46,9 +46,7 @@ public abstract class GameObject {
     /**
      * Collision detection
      */
-    public Rectangle getBounds() {
-        return new Rectangle((int) x, (int) y, width, height);
-    }
+    public Rectangle getBounds() { return new Rectangle((int) x, (int) y, width, height); }
 
     /**
      * Check collision with another GameObject
