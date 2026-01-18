@@ -3,9 +3,11 @@ package com.spaceinvaders.entities;
 import com.spaceinvaders.utils.Constants;
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
 
 /**
- * Single alien enemy with pixel art rendering
+ * Single alien enemy with OPTIMIZED pixel art rendering
+ * Uses cached sprites for better performance
  */
 public class Alien extends GameObject {
     
@@ -22,6 +24,12 @@ public class Alien extends GameObject {
     private static final Color COLOR_TOP = new Color(255, 0 , 255); // Purple (50 points)
     private static final Color COLOR_MIDDLE = new Color(0, 255, 255); // Cyan (30 points)
     private static final Color COLOR_BOTTOM = new Color(0, 255, 0); // Green (10 points)
+
+    /* CACHED SPRITES (static = shared by all aliens) */
+    private static BufferedImage spriteTop;
+    private static BufferedImage spriteMiddle;
+    private static BufferedImage spriteBottom;
+    private static boolean spritesCreated = false;
 
     /**
      * @param x starting X position
@@ -40,6 +48,56 @@ public class Alien extends GameObject {
         } else {
             this.points = Constants.SCORE_ROW_1; // Bottom row = 10;
         }
+
+        // Create sprites only once (first alien created)
+        if (!spritesCreated) {
+            createSprites();
+            spritesCreated = true;
+        }
+    }
+
+    /**
+     * Create cached sprite images for all alien types
+     * Called only ONCE when first alien is created
+     */
+    private static void createSprites() {
+        spriteTop = createAlienSprite(COLOR_TOP, 0);
+        spriteMiddle = createAlienSprite(COLOR_MIDDLE, 1);
+        spriteBottom = createAlienSprite(COLOR_BOTTOM, 2);
+    }
+    
+    /**
+     * Create a single alien sprite
+     * @param color The alien color
+     * @param type type 0 = top, 1 = middle, 2 = bottom
+     * @return BufferedImage of the alien sprite
+     */
+    private static BufferedImage createAlienSprite(Color color, int type) {
+        // Create transparent image
+        BufferedImage sprite = new BufferedImage(
+            Constants.ALIEN_WIDTH, 
+            Constants.ALIEN_HEIGHT, 
+            BufferedImage.TYPE_INT_ARGB
+        );
+
+        Graphics2D g = sprite.createGraphics();
+        g.setColor(color);
+
+        // Draw based on type
+        switch (type) {
+            case 0:
+                drawTopAlienPixels(g);
+                break;
+            case 1:
+                drawMiddleAlienPixels(g);
+                break;
+            case 2:
+                drawBottomAlienPixels(g);
+                break;
+        }
+
+        g.dispose();
+        return sprite;
     }
 
     @Override
@@ -54,140 +112,133 @@ public class Alien extends GameObject {
 
     @Override
     public void render(Graphics2D g2d) {
-        // Choose which alien type to draw based on row
+        // Simply draw the cached sprite
+        BufferedImage sprite;
+
         if (row == 0) {
-            drawTopAlien(g2d);  // Octopus Alien - Purple color
+            sprite = spriteTop;  // Octopus Alien - Purple color
         } else if (row <= 2) {
-            drawMiddleAlien(g2d);   // Grab Alien - Cyan color
+            sprite = spriteMiddle;  // Grab Alien - Cyan color
         } else {
-            drawBottomAlien(g2d);   // Squid Alien - Green color
+            sprite = spriteBottom;   // Squid Alien - Green color
         }
+
+        g2d.drawImage(sprite, (int) x, (int) y, null);
     }
 
     /**
-     * Draw TOP row alien (Octopus) - Purple
+     * Draw top alien pixels to graphics context (Octopus) - Purple
      */
-    private void drawTopAlien(Graphics2D g2d) {
-        g2d.setColor(COLOR_TOP);
-
+    private static void drawTopAlienPixels(Graphics2D g) {
         // Row 0:     ████
-        drawPixel(g2d, 4, 0);
-        drawPixel(g2d, 5, 0);
-        drawPixel(g2d, 6, 0);
-        drawPixel(g2d, 7, 0);
+        drawPixelAt(g, 4, 0);
+        drawPixelAt(g, 5, 0);
+        drawPixelAt(g, 6, 0);
+        drawPixelAt(g, 7, 0);
 
         // Row 1:   ████████
         for (int i = 2; i <= 9; i++) {
-            drawPixel(g2d, i, 1);
+            drawPixelAt(g, i, 1);
         }
 
         // Row 2:   ██ ██ ██
-        drawPixel(g2d, 2, 2);
-        drawPixel(g2d, 3, 2);
-        drawPixel(g2d, 5, 2);
-        drawPixel(g2d, 6, 2);
-        drawPixel(g2d, 8, 2);
-        drawPixel(g2d, 9, 2);
+        drawPixelAt(g, 2, 2);
+        drawPixelAt(g, 3, 2);
+        drawPixelAt(g, 5, 2);
+        drawPixelAt(g, 6, 2);
+        drawPixelAt(g, 8, 2);
+        drawPixelAt(g, 9, 2);
 
         // Row 3:   ████████
         for (int i = 2; i <= 9; i++) {
-            drawPixel(g2d, i, 3);
+            drawPixelAt(g, i, 3);
         }
 
         // Row 4:    █    █
-        drawPixel(g2d, 3, 4);
-        drawPixel(g2d, 8, 4);
+        drawPixelAt(g, 3, 4);
+        drawPixelAt(g, 8, 4);
 
         // Row 5:   █      █
-        drawPixel(g2d, 2, 5);
-        drawPixel(g2d, 9, 5);
+        drawPixelAt(g, 2, 5);
+        drawPixelAt(g, 9, 5);
     }
 
     /**
-     * Draw middle row alien (Crab) - Cyan
+     * Draw middle alien pixels to graphics context (Crab) - Cyan
      */
-    private void drawMiddleAlien(Graphics2D g2d) {
-        g2d.setColor(COLOR_MIDDLE);
-
+    private static void drawMiddleAlienPixels(Graphics2D g) {
         // Row 0:   █      █
-        drawPixel(g2d, 2, 0);
-        drawPixel(g2d, 9, 0);
+        drawPixelAt(g, 2, 0);
+        drawPixelAt(g, 9, 0);
 
         // Row 1:    ██████
         for (int i = 3; i <= 8; i++) {
-            drawPixel(g2d, i, 1);
+            drawPixelAt(g, i, 1);
         }
 
         // Row 2:   ████████
         for (int i = 2; i <= 9; i++) {
-            drawPixel(g2d, i, 2);
+            drawPixelAt(g, i, 2);
         }
 
-        // Row 3:   █ ████ █ (eyes are gaps)
-        drawPixel(g2d, 2, 3);
-        drawPixel(g2d, 4, 3);
-        drawPixel(g2d, 5, 3);
-        drawPixel(g2d, 6, 3);
-        drawPixel(g2d, 7, 3);
-        drawPixel(g2d, 9, 3);
+        // Row 3:   █ ████ █
+        drawPixelAt(g, 2, 3);
+        drawPixelAt(g, 4, 3);
+        drawPixelAt(g, 5, 3);
+        drawPixelAt(g, 6, 3);
+        drawPixelAt(g, 7, 3);
+        drawPixelAt(g, 9, 3);
 
         // Row 4:   ████████
         for (int i = 2; i <= 9; i++) {
-            drawPixel(g2d, i, 4);
+            drawPixelAt(g, i, 4);
         }
 
         // Row 5:    █    █
-        drawPixel(g2d, 3, 5);
-        drawPixel(g2d, 8, 5);
+        drawPixelAt(g, 3, 5);
+        drawPixelAt(g, 8, 5);
     }
 
     /**
-     * Draw bottom row alien (Squid) - Green
+     * Draw bottom alien pixels to graphics context (Squid) - Green
      */
-    private void drawBottomAlien(Graphics2D g2d) {
-        g2d.setColor(COLOR_BOTTOM);
-    
+    private static void drawBottomAlienPixels(Graphics2D g) {
         // Row 0:     ████
-        drawPixel(g2d, 4, 0);
-        drawPixel(g2d, 5, 0);
-        drawPixel(g2d, 6, 0);
-        drawPixel(g2d, 7, 0);
-    
+        drawPixelAt(g, 4, 0);
+        drawPixelAt(g, 5, 0);
+        drawPixelAt(g, 6, 0);
+        drawPixelAt(g, 7, 0);
+
         // Row 1:   ████████
         for (int i = 2; i <= 9; i++) {
-            drawPixel(g2d, i, 1);
+            drawPixelAt(g, i, 1);
         }
-    
+
         // Row 2:   ████████
         for (int i = 2; i <= 9; i++) {
-            drawPixel(g2d, i, 2);
+            drawPixelAt(g, i, 2);
         }
-    
-        // Row 3:    █ ██ █ (eyes are gaps)
-        drawPixel(g2d, 3, 3);
-        drawPixel(g2d, 5, 3);
-        drawPixel(g2d, 6, 3);
-        drawPixel(g2d, 8, 3);
-    
+
+        // Row 3:    █ ██ █
+        drawPixelAt(g, 3, 3);
+        drawPixelAt(g, 5, 3);
+        drawPixelAt(g, 6, 3);
+        drawPixelAt(g, 8, 3);
+
         // Row 4:   █      █
-        drawPixel(g2d, 2, 4);
-        drawPixel(g2d, 9, 4);
-    
+        drawPixelAt(g, 2, 4);
+        drawPixelAt(g, 9, 4);
+
         // Row 5:    █    █
-        drawPixel(g2d, 3, 5);
-        drawPixel(g2d, 8, 5);
+        drawPixelAt(g, 3, 5);
+        drawPixelAt(g, 8, 5);
     }
 
     /**
-    * Helper method to draw a single "Pixel" at grid position relative to alien
-    * @param g2d Graphics context
-    * @param offsetX Grid offset from alien's left edge (0-9)
-    * @param offsetY Grid offset from alien's top edge (0-5)
-    */
-    private void drawPixel(Graphics2D g2d, int offsetX, int offsetY) {
-        int drawX = (int) x + offsetX * PIXEL;
-        int drawY = (int) y + offsetY * PIXEL;
-        g2d.fillRect(drawX, drawY, PIXEL, PIXEL);
+     * Helper to draw a single pixel at grid position
+     */
+    private static void drawPixelAt(Graphics2D g, int gridX, int gridY) {
+        g.fillRect(gridX * PIXEL, gridY * PIXEL, PIXEL, PIXEL);
     }
 
     /* GETTERS */

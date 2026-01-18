@@ -120,30 +120,36 @@ public class AlienFormation {
 
     /**
      * Try to shoot - returns a bullet from random alien, or null
+     * No ArrayList creation every frame for better optimitzation
      */
     public Bullet tryShoot() {
-        // Get list of active (alive) aliens
-        List<Alien> activeAliens = new ArrayList<Alien>();
-        for (Alien alien : aliens) {
-            if (alien.isActive()) {
-                activeAliens.add(alien);
-            }
-        }
-
-        // No alien left
-        if (activeAliens.isEmpty()) {
+        // Random chance to shoot first (skip expensive loop if not shooting)
+        if (random.nextDouble() >= shootChance) {
             return null;
         }
 
-        // Random chance to shoot
-        if (random.nextDouble() < shootChance) {
-            // Pick random alien to shoot
-            Alien shooter = activeAliens.get(random.nextInt(activeAliens.size()));
-            return new Bullet(
-                shooter.getBulletSpawnX(), 
-                shooter.getBulletSpawnY(), 
-                false   // false = alien bullet goes DOWN
-            );
+        // Count active aliens and pick a random index
+        int alienCount = getAliveCount();
+        if (alienCount == 0) {
+            return null;
+        }
+
+        // Pick random alien number
+        int targetIndex = random.nextInt(alienCount);
+        int currentIndex = 0;
+
+        // Find the alien at that index
+        for (Alien alien : aliens) {
+            if (alien.isActive()) {
+                if (currentIndex == targetIndex) {
+                    return new Bullet(
+                        alien.getBulletSpawnX(),
+                        alien.getBulletSpawnY(),
+                        false
+                    );
+                }
+                currentIndex++;
+            }
         }
 
         return null;

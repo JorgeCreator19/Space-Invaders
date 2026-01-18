@@ -5,18 +5,22 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 
 /**
- * Bullet class - used for both player and alien bullets
+ * Bullet class - Green for player, Red for aliens
  */
 public class Bullet extends GameObject {
 
     // Is this bullet from player or alien?
     private boolean isPlayerBullet;
 
+    // Bullet colors
+    private static final Color COLOR_PLAYER_BULLET = new Color(0, 255, 0);  // Green
+    private static final Color COLOR_ALIEN_BULLET = new Color(255, 0, 0);   // Red
+
     /**
      * 
      * @param x starting X position
      * @param y starting Y position
-     * @param isPlayerBullet true = player's bullet (goes UP), false = alien's (goes DOWN)
+     * @param isPlayerBullet true = player's bullet (goes UP in green color), false = alien's (goes DOWN in red color)
      */
     public Bullet(double x , double y, boolean isPlayerBullet) {
         super(x, y, Constants.BULLET_WIDTH, Constants.BULLET_HEIGHT); // Call parent constructor
@@ -43,11 +47,11 @@ public class Bullet extends GameObject {
 
     @Override
     public void render(Graphics2D g2d) {
-        // Player bullets = yellow, Alien bullets = red
+        // Player bullets = green, Alien bullets = red
         if (isPlayerBullet) {
-            g2d.setColor(new Color(255, 255, 0)); // Yellow
+            g2d.setColor(COLOR_PLAYER_BULLET); // Green
         } else {
-            g2d.setColor(new Color(255, 0, 0)); // Red
+            g2d.setColor(COLOR_ALIEN_BULLET); // Red
         }
 
         g2d.fillRect((int) x, (int) y, width, height);

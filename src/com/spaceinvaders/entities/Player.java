@@ -3,9 +3,10 @@ package com.spaceinvaders.entities;
 import com.spaceinvaders.utils.Constants;
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
 
 /**
- * The player spaceship
+ * The player spaceship - Classic Space Invaders style
  */
 public class Player extends GameObject {
     // Movement flags
@@ -14,6 +15,16 @@ public class Player extends GameObject {
 
     // Shooting cooldown
     private long lastShotTime;
+
+    // Pixel size for drawing
+    private static final int PIXEL = 3;
+
+    // Player color
+    private static final Color COLOR_PLAYER = new Color(0, 255, 0);
+
+    // Cached sprite
+    private static BufferedImage sprite;
+    private static boolean spriteCreated = false;
 
     /**
      * Constructor - this creates player at bottom center of screen
@@ -30,6 +41,67 @@ public class Player extends GameObject {
         this.movingLeft = false;
         this.movingRight = false;
         this.lastShotTime = 0;
+
+        // Create sprite only once
+        if (!spriteCreated) {
+            createSprite();
+            spriteCreated = true;
+        }
+    }
+
+    /**
+     * Create cached sprite image - Classic Space Invaders cannon
+     */
+    private static void createSprite() {
+        sprite = new BufferedImage(
+            Constants.PLAYER_WIDTH, 
+            Constants.PLAYER_HEIGHT, 
+            BufferedImage.TYPE_INT_ARGB
+        );
+
+        Graphics2D g = sprite.createGraphics();
+        g.setColor(COLOR_PLAYER);
+
+        int centerX = Constants.PLAYER_WIDTH / 2 / PIXEL;  // Center in grid units
+
+        // Row 0: Cannon tip (2 pixels wide)
+        drawPixelAt(g, centerX, 0);
+        drawPixelAt(g, centerX - 1, 0);
+        
+        // Row 1: Cannon neck (4 pixels wide)
+        drawPixelAt(g, centerX - 1, 1);
+        drawPixelAt(g, centerX, 1);
+        drawPixelAt(g, centerX + 1, 1);
+        drawPixelAt(g, centerX - 2, 1);
+        
+        // Row 2: Cannon neck (4 pixels wide)
+        drawPixelAt(g, centerX - 1, 2);
+        drawPixelAt(g, centerX, 2);
+        drawPixelAt(g, centerX + 1, 2);
+        drawPixelAt(g, centerX - 2, 2);
+        
+        // Row 3-5: Base (wide)
+        for (int row = 3; row <= 5; row++) {
+            for (int col = 1; col <= 14; col++) {
+                drawPixelAt(g, col, row);
+            }
+        }
+        
+        // Row 6-7: Bottom base (full width)
+        for (int row = 6; row <= 7; row++) {
+            for (int col = 0; col <= 15; col++) {
+                drawPixelAt(g, col, row);
+            }
+        }
+        
+        g.dispose();
+    }
+
+    /**
+     * Helper to draw a single pixel
+     */
+    private static void drawPixelAt(Graphics2D g, int gridX, int gridY) {
+        g.fillRect(gridX * PIXEL, gridY * PIXEL, PIXEL, PIXEL);
     }
 
     @Override
@@ -56,16 +128,8 @@ public class Player extends GameObject {
 
     @Override
     public void render(Graphics2D g2d) {
-        // Draw player as green rectangle
-        g2d.setColor(new Color(0, 255, 0));
-        g2d.fillRect((int) x, (int) y, width, height);
-
-        // Draw cannon on top
-        int cannonWidth = 6;
-        int cannonHeigth = 10;
-        int cannonX = (int) x + width / 2 - cannonWidth / 2;
-        int cannonY = (int) y - cannonHeigth;
-        g2d.fillRect(cannonX, cannonY, cannonWidth, cannonHeigth);
+        // Draw cached sprite
+        g2d.drawImage(sprite, (int) x, (int) y, null);
     }
     
     /**

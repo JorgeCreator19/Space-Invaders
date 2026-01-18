@@ -48,6 +48,9 @@ public class GamePanel extends JPanel implements ActionListener {
         setBackground(new Color(10, 10, 30));
         setFocusable(true);
 
+        // Enable double buffering for smoother rendering
+        setDoubleBuffered(true);
+
         // Setup input handler
         input = new InputHandler();
         addKeyListener(input);

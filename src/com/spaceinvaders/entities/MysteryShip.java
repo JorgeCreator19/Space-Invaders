@@ -4,6 +4,7 @@ import com.spaceinvaders.utils.Constants;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.util.Random;
+import java.awt.image.BufferedImage;
 
 /**
  * Mystery UFO ship - bonus enemy that flies across the top
@@ -34,6 +35,10 @@ public class MysteryShip extends GameObject {
     // Random for points values
     private static Random random = new Random();
 
+    // Cached sprite
+    private static BufferedImage sprite;
+    private static boolean spriteCreated = false;
+
     /**
      * Constructor
      * @param fromLeft true  = spawn on left, move right | false = spawn on right, move left
@@ -57,6 +62,57 @@ public class MysteryShip extends GameObject {
 
         // Random point value 
         this.points = POINT_VALUES[random.nextInt(POINT_VALUES.length)];
+
+        // Create sprite only once
+        if (!spriteCreated) {
+            createSprite();
+            spriteCreated = true;
+        }
+    }
+
+    /**
+     * Create cached sprite image
+     */
+    private static void createSprite() {
+        sprite = new BufferedImage(60, 25, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = sprite.createGraphics();
+
+        // Row 0: Top dome
+        g.setColor(COLOR_BODY);
+        for (int i = 6; i <= 13; i++) {
+            drawPixelAt(g, i, 0);
+        }
+
+        // Row 1: Upper body
+        for (int i = 4; i <= 15; i++) {
+            drawPixelAt(g, i, 1);
+        }
+
+        // Row 2: Main body
+        g.setColor(COLOR_DOME);
+        for (int i = 2; i <= 17; i++) {
+            drawPixelAt(g, i, 2);
+        }
+
+        // Row 3: Bottom
+        g.setColor(COLOR_BODY);
+        for (int i = 4; i <= 15; i++) {
+            drawPixelAt(g, i, 3);
+        }
+
+        // Row 4: Lights
+        g.setColor(Color.YELLOW);
+        drawPixelAt(g, 5, 4);
+        drawPixelAt(g, 8, 4);
+        drawPixelAt(g, 11, 4);
+        drawPixelAt(g, 14, 4);
+
+        // Dome highlight
+        g.setColor(new Color(255, 200, 200));
+        drawPixelAt(g, 8, 0);
+        drawPixelAt(g, 9, 0);
+
+        g.dispose();
     }
 
     @Override
@@ -75,53 +131,15 @@ public class MysteryShip extends GameObject {
 
     @Override
     public void render(Graphics2D g2d) {
-        int px = (int) x;
-        int py = (int) y;
-
-        // Draw UFO body in red
-        g2d.setColor(COLOR_BODY);
-
-        /* Main body - wide ellipse shape */
-        // Row 0: Top dome
-        for (int i = 6; i <= 13; i++) {
-            drawPixel(g2d, px, i, py, 0);
-        }
-
-        // Row 1: Upper body
-        for (int i = 4; i <= 15; i++) {
-            drawPixel(g2d, px, i, py, 1);
-        }
-
-        // Row 2: Main body - widest
-        g2d.setColor(COLOR_DOME);
-        for (int i = 2; i <= 17; i++) {
-            drawPixel(g2d, px, i, py, 2);
-        }
-
-        // Row 3: Bottom with lights
-        g2d.setColor(COLOR_BODY);
-        for (int i = 4; i <= 15; i++) {
-            drawPixel(g2d, px, i, py, 3);
-        }
-
-        // Row 4: Lights underneath (blinking effect)
-        g2d.setColor(Color.YELLOW);
-        drawPixel(g2d, px, 5, py, 4);
-        drawPixel(g2d, px, 8, py, 4);
-        drawPixel(g2d, px, 11, py, 4);
-        drawPixel(g2d, px, 14, py, 4);
-
-        // Draw dome highlight
-        g2d.setColor(new Color(255, 200, 200));
-        drawPixel(g2d, px, 8, py, 0);
-        drawPixel(g2d, px, 9, py, 0);
+        // Draw cached sprite
+        g2d.drawImage(sprite, (int) x, (int) y, null);
     }
 
     /**
      * Helper to draw a pixel
      */
-    private void drawPixel(Graphics2D g2d, int baseX, int offsetX, int baseY, int offsetY) {
-        g2d.fillRect(baseX + offsetX * PIXEL, baseY + offsetY * PIXEL, PIXEL, PIXEL);
+    private static void drawPixelAt(Graphics2D g, int gridX, int gridY) {
+        g.fillRect(gridX * PIXEL, gridY * PIXEL, PIXEL, PIXEL);
     }
 
     /**
