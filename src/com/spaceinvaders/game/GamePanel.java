@@ -461,17 +461,14 @@ public class GamePanel extends JPanel implements ActionListener {
         // Enable anti-aliasing for smoother graphics
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        // Draw starfield background for menu screens
-        if (gameState == GameState.MENU || gameState == GameState.CONTROLS) {
-            drawStarfield(g2d);
-        }
-
         // Draw based on current state
         switch (gameState) {
             case MENU:
+                drawStarfield(g2d);  // Stars for menu
                 drawMenu(g2d);
                 break;
             case CONTROLS:
+                drawStarfield(g2d);  // Stars for controls
                 drawControls(g2d);
                 break;
             case PLAYING:
@@ -707,6 +704,9 @@ public class GamePanel extends JPanel implements ActionListener {
      * Draw game elements
      */
     private void drawGame(Graphics2D g2d) {
+        // Draw starfield background (behind everything)
+        drawStarfield(g2d);
+
         // Draw HUD (score, lives and wave)
         drawHUD(g2d);
 
