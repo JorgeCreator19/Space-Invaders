@@ -26,6 +26,13 @@ public class GamePanel extends JPanel implements ActionListener {
     private AlienFormation alienFormation;
     private List<Bullet> bullets;
     private MysteryShip mysteryShip;
+    private List<Explosion> explosions;
+
+    /* FPS COUNTER */
+    private int fps;
+    private int frameCount;
+    private long lastFpsTime;
+    private boolean showFps = true;
 
     /* GAME STATE */
     private GameState gameState;
@@ -71,11 +78,17 @@ public class GamePanel extends JPanel implements ActionListener {
         alienFormation = new AlienFormation();
         bullets = new ArrayList<>();
         mysteryShip = null;
+        explosions = new ArrayList<>();
 
         score = 0;
         lives = Constants.INITIAL_LIVES;
         wave = 1;
         gameState = GameState.MENU;
+
+        // FPS counter init
+        fps = 0;
+        frameCount = 0;
+        lastFpsTime = System.currentTimeMillis();
     }
 
     /**
@@ -86,6 +99,7 @@ public class GamePanel extends JPanel implements ActionListener {
         alienFormation.fullReset();
         bullets.clear();
         mysteryShip = null;
+        explosions.clear();
 
         score = 0;
         lives = Constants.INITIAL_LIVES;
@@ -102,6 +116,7 @@ public class GamePanel extends JPanel implements ActionListener {
         alienFormation.reset();
         bullets.clear();
         mysteryShip = null;
+        explosions.clear();
         player.reset();
     }
 
@@ -110,6 +125,15 @@ public class GamePanel extends JPanel implements ActionListener {
      */
     @Override
     public void actionPerformed(ActionEvent e) {
+        // Calculate FPS
+        frameCount++;
+        long currentTime = System.currentTimeMillis();
+        if (currentTime - lastFpsTime >= 1000) {
+            fps = frameCount;
+            frameCount = 0;
+            lastFpsTime = currentTime;
+        }
+
         // Handle input based on current state
         handleInput();
 
@@ -225,6 +249,16 @@ public class GamePanel extends JPanel implements ActionListener {
             }
         }
 
+        // Update explosions
+        Iterator<Explosion> explosionIt = explosions.iterator();
+        while (explosionIt.hasNext()) {
+            Explosion explosion = explosionIt.next();
+            explosion.update();
+            if (!explosion.isActive()) {
+                explosionIt.remove();
+            }
+        }
+
         // Check collisions
         checkCollisions();
 
@@ -270,6 +304,15 @@ public class GamePanel extends JPanel implements ActionListener {
                     alien.destroy();
                     score += alien.getPoints();
                     alienFormation.increaseSpeed();
+                    
+                    // Create explosion at alien position
+                    Color explosionColor = getAlienColor(alien.getRow());
+                    explosions.add(new Explosion(
+                        alien.getX() + alien.getWidth() / 2,
+                        alien.getY() + alien.getHeight() / 2,
+                        explosionColor
+                    ));
+
                     break;
                 }
             }
@@ -283,6 +326,14 @@ public class GamePanel extends JPanel implements ActionListener {
                 if (bullet.collidesWith(mysteryShip)) {
                     bullet.destroy();
                     score += mysteryShip.getPoints();
+                    
+                    // Create explosion at mystery ship
+                    explosions.add(new Explosion(
+                    mysteryShip.getX() + mysteryShip.getWidth() / 2,
+                    mysteryShip.getY() + mysteryShip.getHeight() / 2,
+                    new Color(255, 0, 0)  // Red explosion
+                    ));
+                    
                     mysteryShip.destroy();
                     break;
                 }
@@ -297,11 +348,31 @@ public class GamePanel extends JPanel implements ActionListener {
                 bullet.destroy();
                 lives--;
 
+                // Create explosion at player position
+                explosions.add(new Explosion(
+                player.getX() + player.getWidth() / 2,
+                player.getY() + player.getHeight() / 2,
+                new Color(0, 255, 0)  // Green explosion
+                ));
+
                 if (lives <= 0) {
                     gameState = GameState.GAME_OVER;
                 }
                 break;
             }
+        }
+    }
+
+    /**
+     * Helper to get alien color based on row
+     */
+    private Color getAlienColor(int row) {
+        if (row == 0) {
+            return new Color(255, 0, 255);  // Purple
+        } else if (row <= 2) {
+            return new Color(0, 255, 255);  // Cyan
+        } else {
+            return new Color(0, 255, 0);    // Green
         }
     }
 
@@ -395,6 +466,18 @@ public class GamePanel extends JPanel implements ActionListener {
                 bullet.render(g2d);
             }
         }
+
+        // Draw explosions
+        for (Explosion explosion : explosions) {
+            if (explosion.isActive()) {
+            explosion.render(g2d);
+            }
+        }
+
+        // Draw FPS counter
+        if (showFps) {
+            drawFPS(g2d);
+        }
     }
 
     /**
@@ -476,5 +559,14 @@ public class GamePanel extends JPanel implements ActionListener {
         g2d.setColor(Color.GREEN);
         g2d.setFont(new Font("Arial", Font.PLAIN, 24));
         drawCenteredString(g2d, "Press ENTER for Next Wave", Constants.WINDOW_HEIGHT / 2 + 30);
+    }
+
+    /**
+     * Draw FPS counter in corner
+     */
+    private void drawFPS(Graphics2D g2d) {
+        g2d.setColor(Color.YELLOW);
+        g2d.setFont(new Font("Arial", Font.PLAIN, 14));
+        g2d.drawString("FPS: " + fps, Constants.WINDOW_WIDTH - 70, Constants.WINDOW_HEIGHT - 10);
     }
 }
