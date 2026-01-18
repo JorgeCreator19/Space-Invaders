@@ -13,6 +13,8 @@ public class InputHandler implements KeyListener {
     private boolean rightPressed;
     private boolean upPressed;
     private boolean downPressed;
+    private boolean leftConsumed;
+    private boolean rightConsumed;
     private boolean shootPressed;
     private boolean pausePressed;
     private boolean enterPressed;
@@ -90,11 +92,13 @@ public class InputHandler implements KeyListener {
         // Left arrow or A
         if (key == KeyEvent.VK_LEFT || key == KeyEvent.VK_A) {
             leftPressed = false;
+            leftConsumed = false;
         }
 
         // Right arrow or D
         if (key == KeyEvent.VK_RIGHT || key == KeyEvent.VK_D) {
             rightPressed = false;
+            rightConsumed = false;
         }
 
         // Up arrow or W
@@ -194,6 +198,22 @@ public class InputHandler implements KeyListener {
     public boolean consumeDown() {
         if (downPressed) {
             downPressed = false;
+            return true;
+        }
+        return false;
+    }
+
+    public boolean consumeLeft() {
+        if (leftPressed && !leftConsumed) {
+            leftConsumed = true;
+            return true;
+        }
+        return false;
+    }
+
+    public boolean consumeRight() {
+        if (rightPressed && !rightConsumed) {
+            rightConsumed = true;
             return true;
         }
         return false;

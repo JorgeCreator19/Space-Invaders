@@ -11,6 +11,16 @@ public final class Constants {
     public static final int GAME_SPEED = 1000 / FPS; // Game speed like ~16ms
     public static final int INITIAL_LIVES = 3; // Player start with 3 lives
 
+    /* GRAPHICS SETTINGS */
+    public static final int STAR_COUNT_HIGH = 150;    // High quality
+    public static final int STAR_COUNT_MEDIUM = 75;   // Medium quality
+    public static final int STAR_COUNT_LOW = 30;      // Low quality (better performance)
+
+    /* SETTINGS QUALITY LEVELS */
+    public static final int QUALITY_HIGH = 0;
+    public static final int QUALITY_MEDIUM = 1;
+    public static final int QUALITY_LOW = 2;
+
     /* MENU SETTINGS */
     public static final int STAR_COUNT = 100; // Number of stars in background
 

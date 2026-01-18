@@ -2,6 +2,8 @@ package com.spaceinvaders.game;
 
 import com.spaceinvaders.entities.*;
 import com.spaceinvaders.utils.Constants;
+import com.spaceinvaders.utils.Settings;
+import com.spaceinvaders.utils.SoundManager;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -26,8 +28,22 @@ public class GamePanel extends JPanel implements ActionListener {
     private int menuSelection = 0; // 0 = Play, 1 = Controls, 2 = Exit
     private static final int MENU_PLAY = 0;
     private static final int MENU_CONTROLS = 1;
-    private static final int MENU_EXIT = 2;
-    private static final int MENU_OPTIONS = 3; // Total menu options
+    private static final int MENU_SETTINGS = 2;
+    private static final int MENU_EXIT = 3;
+    private static final int MENU_OPTIONS = 4; // Total menu options
+
+    /* SETTINGS MENU */
+    private int settingsSelection = 0;
+    private static final int SETTINGS_MUSIC_VOL = 0;
+    private static final int SETTINGS_SFX_VOL = 1;
+    private static final int SETTINGS_GRAPHICS = 2;
+    private static final int SETTINGS_SHOW_FPS = 3;
+    private static final int SETTINGS_BACK = 4;
+    private static final int SETTINGS_OPTIONS = 5;
+
+    /* SOUND & SETTINGS */
+    private SoundManager soundManager;
+    private Settings settings;
 
     /* ANIMATED BACKGROUND */
     private Star[] stars;
@@ -76,11 +92,12 @@ public class GamePanel extends JPanel implements ActionListener {
         // Enable double buffering for smoother rendering
         setDoubleBuffered(true);
 
-        // Initialize stars for background
-        stars = new Star[Constants.STAR_COUNT];
-        for (int i = 0; i < stars.length; i++) {
-            stars[i] = new Star();
-        }
+        // Initialize settings and sound
+        settings = Settings.getInstance();
+        soundManager = SoundManager.getInstance();
+
+        // Initialize stars based on settings
+        initStars();
 
         // Setup input handler
         input = new InputHandler();
@@ -92,6 +109,17 @@ public class GamePanel extends JPanel implements ActionListener {
         // Start game loop timer
         gameTimer = new Timer(Constants.GAME_SPEED, this);
         gameTimer.start();
+    }
+
+    /**
+     * Initialize stars based on graphics quality
+     */
+    private void initStars() {
+        int starCount = settings.getStarCount();
+        stars = new Star[starCount];
+        for (int i = 0; i < stars.length; i++) {
+            stars[i] = new Star();
+        }
     }
 
     /**
@@ -130,6 +158,9 @@ public class GamePanel extends JPanel implements ActionListener {
         lives = Constants.INITIAL_LIVES;
         wave = 1;
         gameState = GameState.PLAYING;
+
+        // Start background music
+        soundManager.playBackgroundMusic();
     }
 
     /**
@@ -195,6 +226,7 @@ public class GamePanel extends JPanel implements ActionListener {
                 if (menuSelection < 0) {
                     menuSelection = MENU_OPTIONS - 1;
                 }
+                soundManager.playMenuSelect();
             }
 
             // Navigate down
@@ -203,15 +235,21 @@ public class GamePanel extends JPanel implements ActionListener {
                 if (menuSelection >= MENU_OPTIONS) {
                     menuSelection = 0;
                 }
+                soundManager.playMenuSelect();
             }
             // Selection option
             if (input.consumeEnter()) {
+                soundManager.playMenuConfirm();
                 switch (menuSelection) {
                     case MENU_PLAY:
                         startGame();
                         break;
                     case MENU_CONTROLS:
                         gameState = GameState.CONTROLS;
+                        break;
+                    case MENU_SETTINGS:
+                        gameState = GameState.SETTINGS;
+                        settingsSelection = 0;
                         break;
                     case MENU_EXIT:
                         System.exit(0);
@@ -221,9 +259,52 @@ public class GamePanel extends JPanel implements ActionListener {
             return;
         }
 
+        // SETTINGS state
+        if (gameState == GameState.SETTINGS) {
+            if (input.consumeUp()) {
+                settingsSelection--;
+                if (settingsSelection < 0) {
+                    settingsSelection = SETTINGS_OPTIONS - 1;
+                }
+                soundManager.playMenuSelect();
+            }
+            if (input.consumeDown()) {
+                settingsSelection++;
+                if (settingsSelection >= SETTINGS_OPTIONS) {
+                    settingsSelection = 0;
+                }
+                soundManager.playMenuSelect();
+            }
+            if (input.consumeLeft()) {
+                adjustSetting(-1);
+            }
+            if (input.consumeRight()) {
+                adjustSetting(1);
+            }
+            if (input.consumeEnter()) {
+                if (settingsSelection == SETTINGS_BACK) {
+                    soundManager.playMenuConfirm();
+                    gameState = GameState.MENU;
+                } else if (settingsSelection == SETTINGS_GRAPHICS) {
+                    settings.cycleGraphicsQuality();
+                    initStars();  // Reinitialize stars with new count
+                    soundManager.playMenuConfirm();
+                } else if (settingsSelection == SETTINGS_SHOW_FPS) {
+                    settings.toggleShowFps();
+                    soundManager.playMenuConfirm();
+                }
+            }
+            if (input.consumeEscape()) {
+                soundManager.playMenuConfirm();
+                gameState = GameState.MENU;
+            }
+            return;
+        }
+
         // CONTROLS state
         if (gameState == GameState.CONTROLS) {
             if (input.consumeEscape() || input.consumeEnter()) {
+                soundManager.playMenuConfirm();
                 gameState = GameState.MENU;
             }
             return;
@@ -237,9 +318,11 @@ public class GamePanel extends JPanel implements ActionListener {
             }
             
             if (input.consumeEnter()) {
+                soundManager.playMenuConfirm();
                 startGame();
             }
             if (input.consumeEscape()) {
+                soundManager.playMenuConfirm();
                 gameState = GameState.MENU;
             }
             return;
@@ -248,6 +331,7 @@ public class GamePanel extends JPanel implements ActionListener {
         // VICTORY state
         if (gameState == GameState.VICTORY) {
             if (input.consumeEnter()) {
+                soundManager.playMenuConfirm();
                 nextWave();
                 gameState = GameState.PLAYING;
             }
@@ -257,9 +341,13 @@ public class GamePanel extends JPanel implements ActionListener {
         // PAUSED state
         if (gameState == GameState.PAUSED) {
             if (input.consumePause()) {
+                soundManager.playPause();
+                soundManager.resumeBackgroundMusic();
                 gameState = GameState.PLAYING;
             }
             if (input.consumeEscape()) {
+                soundManager.playMenuConfirm();
+                soundManager.stopBackgroundMusic();
                 gameState = GameState.MENU;
             }
             return;
@@ -278,15 +366,36 @@ public class GamePanel extends JPanel implements ActionListener {
                 );
                 bullets.add(bullet);
                 player.shoot();
+                soundManager.playPlayerShoot(); // Play shoot sound
             }
 
             if (input.consumePause()) {
+                soundManager.playPause();
+                soundManager.pauseBackgroundMusic();
                 gameState = GameState.PAUSED;
             }
 
             if (input.consumeEscape()) {
+                soundManager.stopBackgroundMusic();
                 gameState = GameState.MENU;
             }
+        }
+    }
+
+    /**
+     * Adjust setting value (for sliders)
+     */
+    private void adjustSetting(int direction) {
+        switch (settingsSelection) {
+            case SETTINGS_MUSIC_VOL:
+                float newMusicVol = soundManager.getMusicVolume() + (direction * 0.1f);
+                soundManager.setMusicVolume(newMusicVol);
+                break;
+            case SETTINGS_SFX_VOL:
+                float newSfxVol = soundManager.getSfxVolume() + (direction * 0.1f);
+                soundManager.setSfxVolume(newSfxVol);
+                soundManager.playMenuSelect();  // Test the new volume
+                break;
         }
     }
 
@@ -304,6 +413,7 @@ public class GamePanel extends JPanel implements ActionListener {
         Bullet alienBullet = alienFormation.tryShoot();
         if (alienBullet != null) {
             bullets.add(alienBullet);
+            soundManager.playAlienShoot();
         }
 
         // Update bullets
@@ -344,6 +454,7 @@ public class GamePanel extends JPanel implements ActionListener {
 
         // Check win condition (all aliens dead)
         if (alienFormation.getAliveCount() == 0) {
+            soundManager.playVictory();
             gameState = GameState.VICTORY;
 
             // While lives <= 3 add one live when the wave is complete
@@ -384,6 +495,7 @@ public class GamePanel extends JPanel implements ActionListener {
                         alien.getY() + alien.getHeight() / 2,
                         explosionColor
                     ));
+                    soundManager.playExplosion();
 
                     break;
                 }
@@ -405,6 +517,7 @@ public class GamePanel extends JPanel implements ActionListener {
                     mysteryShip.getY() + mysteryShip.getHeight() / 2,
                     new Color(255, 0, 0)  // Red explosion
                     ));
+                    soundManager.playExplosion();
                     
                     mysteryShip.destroy();
                     break;
@@ -426,8 +539,11 @@ public class GamePanel extends JPanel implements ActionListener {
                 player.getY() + player.getHeight() / 2,
                 new Color(0, 255, 0)  // Green explosion
                 ));
+                soundManager.playPlayerExplosion();
 
                 if (lives <= 0) {
+                    soundManager.stopBackgroundMusic();
+                    soundManager.playGameOver();
                     gameState = GameState.GAME_OVER;
                 }
                 break;
@@ -461,31 +577,78 @@ public class GamePanel extends JPanel implements ActionListener {
         // Enable anti-aliasing for smoother graphics
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
+        // Always clear screen first with solid color
+        g2d.setColor(new Color(10, 10, 30));
+        g2d.fillRect(0, 0, Constants.WINDOW_WIDTH, Constants.WINDOW_HEIGHT);
+
+        // Always draw starfield (it's behind everything)
+        drawStarfield(g2d);
+
         // Draw based on current state
         switch (gameState) {
             case MENU:
-                drawStarfield(g2d);  // Stars for menu
+                // Clear and draw menu
                 drawMenu(g2d);
                 break;
+
             case CONTROLS:
-                drawStarfield(g2d);  // Stars for controls
+                // Clear and draw controls screen
                 drawControls(g2d);
+                break;
+
+            case SETTINGS:
+                // drawSettings handles its own background clearing
+                drawSettings(g2d);
                 break;
             case PLAYING:
                 drawGame(g2d);
                 break;
+
             case PAUSED:
                 drawGame(g2d);
                 drawPauseOverlay(g2d);
                 break;
+
             case GAME_OVER:
                 drawGame(g2d);
                 drawGameOverOverlay(g2d);
                 break;
+
             case VICTORY:
                 drawGame(g2d);
                 drawVictoryOverlay(g2d);
                 break;
+        }
+    }
+
+    /**
+     * Draw only game elements (player, aliens, bullets, explosions)
+     * Called ONLY during gameplay states
+     */
+    private void drawGameElements(Graphics2D g2d) {
+        // Draw player
+        player.render(g2d);
+
+        // Draw aliens
+        alienFormation.render(g2d);
+
+        // Draw Mystery Ship
+        if (mysteryShip != null && mysteryShip.isActive()) {
+            mysteryShip.render(g2d);
+        }
+
+        // Draw bullets
+        for (Bullet bullet : bullets) {
+            if (bullet.isActive()) {
+                bullet.render(g2d);
+            }
+        }
+
+        // Draw explosions
+        for (Explosion explosion : explosions) {
+            if (explosion.isActive()) {
+                explosion.render(g2d);
+            }
         }
     }
 
@@ -526,10 +689,10 @@ public class GamePanel extends JPanel implements ActionListener {
         drawMenuAliens(g2d, centerX, 260);
 
         // Menu options
-        int menuStartY = 340;
-        int menuSpacing = 50;
+        int menuStartY = 320;
+        int menuSpacing = 45;
 
-        String[] menuOptions = {"PLAY GAME", "CONTROLS", "EXIT"};
+        String[] menuOptions = {"PLAY GAME", "CONTROLS", "SETTINGS", "EXIT"};
 
         for (int i = 0; i < menuOptions.length; i++) {
             int y = menuStartY + i * menuSpacing;
@@ -559,7 +722,7 @@ public class GamePanel extends JPanel implements ActionListener {
         // Instructions
         g2d.setColor(new Color(100, 100, 100));
         g2d.setFont(new Font("Arial", Font.PLAIN, 16));
-        drawCenteredString(g2d, "Use UP/DOWN to select, ENTER to confirm", 480);
+        drawCenteredString(g2d, "Use UP/DOWN to select, ENTER to confirm", 520);
 
         //High score
         g2d.setColor(new Color(255, 255, 0));
@@ -701,43 +864,144 @@ public class GamePanel extends JPanel implements ActionListener {
     }
 
     /**
+     * Draw settings screen
+     */
+    private void drawSettings(Graphics2D g2d) {
+        // Fill entire screen with solid background (hides everything behind)
+        g2d.setColor(new Color(10, 10, 30));
+        g2d.fillRect(0, 0, Constants.WINDOW_WIDTH, Constants.WINDOW_HEIGHT);
+
+        // Redraw starfield on top of solid background
+        drawStarfield(g2d);
+
+        // Title
+        g2d.setColor(new Color(0, 255, 0));
+        g2d.setFont(new Font("Arial", Font.BOLD, 48));
+        drawCenteredString(g2d, "SETTINGS", 80);
+
+        // Settings box
+        int boxX = 100;
+        int boxY = 120;
+        int boxWidth = Constants.WINDOW_WIDTH - 200;
+        int boxHeight = 380;
+
+        // Box background
+        g2d.setColor(new Color(20, 20, 40));
+        g2d.fillRect(boxX, boxY, boxWidth, boxHeight);
+        
+        // Box border
+        g2d.setColor(new Color(0, 255, 0));
+        g2d.drawRect(boxX, boxY, boxWidth, boxHeight);
+
+        // Settings options
+        int startY = boxY + 60;
+        int lineHeight = 60;
+        int leftCol = boxX + 40;
+        int rightCol = boxX + boxWidth - 200;
+
+        String[] settingsNames = {
+            "Music Volume",
+            "SFX Volume", 
+            "Graphics Quality",
+            "Show FPS",
+            "BACK TO MENU"
+        };
+
+        for (int i = 0; i < SETTINGS_OPTIONS; i++) {
+            int y = startY + i * lineHeight;
+
+            // Highlight selected
+            if (i == settingsSelection) {
+                g2d.setColor(new Color(0, 255, 0, 50));
+                g2d.fillRect(boxX + 10, y - 25, boxWidth - 20, 40);
+                g2d.setColor(new Color(0, 255, 0));
+                g2d.setFont(new Font("Arial", Font.BOLD, 22));
+            } else {
+                g2d.setColor(Color.WHITE);
+                g2d.setFont(new Font("Arial", Font.PLAIN, 20));
+            }
+
+            // Draw setting name
+            g2d.drawString(settingsNames[i], leftCol, y);
+
+            // Draw setting value
+            if (i == settingsSelection) {
+                g2d.setColor(new Color(255, 255, 0));
+            } else {
+                g2d.setColor(new Color(150, 150, 150));
+            }
+
+            switch (i) {
+                case SETTINGS_MUSIC_VOL:
+                    drawVolumeBar(g2d, rightCol, y - 15, soundManager.getMusicVolume());
+                    break;
+                case SETTINGS_SFX_VOL:
+                    drawVolumeBar(g2d, rightCol, y - 15, soundManager.getSfxVolume());
+                    break;
+                case SETTINGS_GRAPHICS:
+                    g2d.drawString("< " + settings.getGraphicsQualityName() + " >", rightCol, y);
+                    break;
+                case SETTINGS_SHOW_FPS:
+                    g2d.drawString(settings.isShowFps() ? "ON" : "OFF", rightCol + 50, y);
+                    break;
+                case SETTINGS_BACK:
+                    // No value for back button
+                    break;
+            }
+
+            // Instructions
+            g2d.setColor(new Color(100, 100, 100));
+            g2d.setFont(new Font("Arial", Font.PLAIN, 16));
+            drawCenteredString(g2d, "UP/DOWN to select, LEFT/RIGHT to adjust, ENTER to confirm", 540);
+        
+            // FPS
+            if (settings.isShowFps()) {
+                g2d.setColor(Color.YELLOW);
+                g2d.setFont(new Font("Arial", Font.PLAIN, 14));
+                g2d.drawString("FPS: " + fps, Constants.WINDOW_WIDTH - 70, Constants.WINDOW_HEIGHT - 10);
+            }
+        }
+    }
+
+    /**
+     * Draw volume bar for settings
+     */
+    private void drawVolumeBar(Graphics2D g2d, int x, int y, float volume) {
+        int barWidth = 120;
+        int barHeight = 20;
+        int fillWidth = (int) (barWidth * volume);
+        
+        // Background
+        g2d.setColor(new Color(50, 50, 50));
+        g2d.fillRect(x, y, barWidth, barHeight);
+        
+        // Fill
+        g2d.setColor(new Color(0, 255, 0));
+        g2d.fillRect(x, y, fillWidth, barHeight);
+        
+        // Border
+        g2d.setColor(new Color(100, 100, 100));
+        g2d.drawRect(x, y, barWidth, barHeight);
+        
+        // Percentage text
+        g2d.setColor(Color.WHITE);
+        g2d.setFont(new Font("Arial", Font.PLAIN, 14));
+        g2d.drawString((int)(volume * 100) + "%", x + barWidth + 10, y + 15);
+    }
+
+    /**
      * Draw game elements
      */
     private void drawGame(Graphics2D g2d) {
-        // Draw starfield background (behind everything)
-        drawStarfield(g2d);
+        // Draw game elements
+        drawGameElements(g2d);
 
         // Draw HUD (score, lives and wave)
         drawHUD(g2d);
 
-        // Draw player
-        player.render(g2d);
-
-        // Draw aliens
-        alienFormation.render(g2d);
-
-        // Draw Mystery Ship
-        if (mysteryShip != null && mysteryShip.isActive()) {
-            mysteryShip.render(g2d);
-        }
-
-        // Draw bullets
-        for (Bullet bullet : bullets) {
-            if (bullet.isActive()) {
-                bullet.render(g2d);
-            }
-        }
-
-        // Draw explosions
-        for (Explosion explosion : explosions) {
-            if (explosion.isActive()) {
-            explosion.render(g2d);
-            }
-        }
-
         // Draw FPS counter
-        if (showFps) {
-            drawFPS(g2d);
+        if (settings.isShowFps()) {
+            drawFps(g2d);
         }
     }
 
@@ -825,9 +1089,11 @@ public class GamePanel extends JPanel implements ActionListener {
     /**
      * Draw FPS counter in corner
      */
-    private void drawFPS(Graphics2D g2d) {
-        g2d.setColor(Color.YELLOW);
-        g2d.setFont(new Font("Arial", Font.PLAIN, 14));
-        g2d.drawString("FPS: " + fps, Constants.WINDOW_WIDTH - 70, Constants.WINDOW_HEIGHT - 10);
+    private void drawFps(Graphics2D g2d) {
+        if (settings.isShowFps()) {
+            g2d.setColor(Color.YELLOW);
+            g2d.setFont(new Font("Arial", Font.PLAIN, 14));
+            g2d.drawString("FPS: " + fps, Constants.WINDOW_WIDTH - 70, Constants.WINDOW_HEIGHT - 10);
+        }
     }
 }
