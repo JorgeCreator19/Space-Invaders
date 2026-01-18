@@ -11,6 +11,9 @@ public final class Constants {
     public static final int GAME_SPEED = 1000 / FPS; // Game speed like ~16ms
     public static final int INITIAL_LIVES = 3; // Player start with 3 lives
 
+    /* MENU SETTINGS */
+    public static final int STAR_COUNT = 100; // Number of stars in background
+
     /* PLAYER SETTINGS */
     public static final int PLAYER_WIDTH = 50; // 50 px
     public static final int PLAYER_HEIGHT = 30; // 30 px
@@ -39,7 +42,7 @@ public final class Constants {
     public static final double ALIEN_SHOOT_CHANCE_INCREMENT = 0.002; // Increase per wave (0.2%)
     public static final double ALIEN_SHOOT_CHANCE_MAX = 0.02; // Maximum chance (2%)
 
-    /* Mystery Ship */
+    /* MYSTERY SHIP */
     public static final int MYSTERY_SHIP_WIDTH = 60; // 60 px
     public static final int MYSTERY_SHIP_HEIGHT = 25; // 25 px
     public static final int MYSTERY_SHIP_SPEED = 3; // 3 px per frame

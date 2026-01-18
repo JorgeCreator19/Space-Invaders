@@ -6,6 +6,7 @@ package com.spaceinvaders.game;
  */
 public enum GameState {
     MENU,       // Main menu state
+    CONTROLS,   // Controls screen
     PLAYING,    // Game running state
     PAUSED,     // Game paused state
     GAME_OVER,  // Player died, lose game state

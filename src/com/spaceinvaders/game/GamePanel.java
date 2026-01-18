@@ -2,6 +2,7 @@ package com.spaceinvaders.game;
 
 import com.spaceinvaders.entities.*;
 import com.spaceinvaders.utils.Constants;
+
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -20,6 +21,23 @@ import javax.swing.Timer;
  * Main game panel - handles rendering and game loop
  */
 public class GamePanel extends JPanel implements ActionListener {
+
+    /* MENU */
+    private int menuSelection = 0; // 0 = Play, 1 = Controls, 2 = Exit
+    private static final int MENU_PLAY = 0;
+    private static final int MENU_CONTROLS = 1;
+    private static final int MENU_EXIT = 2;
+    private static final int MENU_OPTIONS = 3; // Total menu options
+
+    /* ANIMATED BACKGROUND */
+    private Star[] stars;
+
+    /* HIGH SCORE */
+    private int highScore = 0;
+
+    /* ANIMATED ALIENS FOR MENU */
+    private int menuAlienFrame = 0;
+    private int menuAlienTimer = 0;
 
     /* GAME OBJECTS */
     private Player player;
@@ -52,11 +70,17 @@ public class GamePanel extends JPanel implements ActionListener {
     public GamePanel() {
         // Setup panel size and color
         setPreferredSize(new Dimension(Constants.WINDOW_WIDTH, Constants.WINDOW_HEIGHT));
-        setBackground(new Color(10, 10, 30));
+        setBackground(new Color(0, 0, 0)); // Pure black for space
         setFocusable(true);
 
         // Enable double buffering for smoother rendering
         setDoubleBuffered(true);
+
+        // Initialize stars for background
+        stars = new Star[Constants.STAR_COUNT];
+        for (int i = 0; i < stars.length; i++) {
+            stars[i] = new Star();
+        }
 
         // Setup input handler
         input = new InputHandler();
@@ -84,6 +108,7 @@ public class GamePanel extends JPanel implements ActionListener {
         lives = Constants.INITIAL_LIVES;
         wave = 1;
         gameState = GameState.MENU;
+        menuSelection = 0;
 
         // FPS counter init
         fps = 0;
@@ -134,6 +159,18 @@ public class GamePanel extends JPanel implements ActionListener {
             lastFpsTime = currentTime;
         }
 
+        // Update stars (always, for background animation)
+        for (Star star : stars) {
+            star.update();
+        }
+
+        // Update menu alien animation
+        menuAlienTimer++;
+        if (menuAlienTimer >= 30) {
+            menuAlienTimer = 0;
+            menuAlienFrame = (menuAlienFrame + 1) % 2;
+        }
+
         // Handle input based on current state
         handleInput();
 
@@ -152,14 +189,53 @@ public class GamePanel extends JPanel implements ActionListener {
     private void handleInput() {
         // MENU state
         if (gameState == GameState.MENU) {
+            // Navigate up
+            if (input.consumeUp()) {
+                menuSelection--;
+                if (menuSelection < 0) {
+                    menuSelection = MENU_OPTIONS - 1;
+                }
+            }
+
+            // Navigate down
+            if (input.consumeDown()) {
+                menuSelection++;
+                if (menuSelection >= MENU_OPTIONS) {
+                    menuSelection = 0;
+                }
+            }
+            // Selection option
             if (input.consumeEnter()) {
-                startGame();
+                switch (menuSelection) {
+                    case MENU_PLAY:
+                        startGame();
+                        break;
+                    case MENU_CONTROLS:
+                        gameState = GameState.CONTROLS;
+                        break;
+                    case MENU_EXIT:
+                        System.exit(0);
+                        break;
+                }
+            }
+            return;
+        }
+
+        // CONTROLS state
+        if (gameState == GameState.CONTROLS) {
+            if (input.consumeEscape() || input.consumeEnter()) {
+                gameState = GameState.MENU;
             }
             return;
         }
 
         // GAME OVER state
         if (gameState == GameState.GAME_OVER) {
+            // Update high score
+            if (score > highScore) {
+                highScore = score;
+            }
+            
             if (input.consumeEnter()) {
                 startGame();
             }
@@ -191,27 +267,23 @@ public class GamePanel extends JPanel implements ActionListener {
 
         // PLAYING state
         if (gameState == GameState.PLAYING) {
-            // Movement
             player.setMovingLeft(input.isLeftPressed());
             player.setMovingRight(input.isRightPressed());
 
-            // Shooting
             if (input.isShootPressed() && player.canShoot()) {
                 Bullet bullet = new Bullet(
                     player.getBulletSpawnX(),
-                    player.getBulletSpawnY(),
-                    true // Player bullet
+                    player.getBulletSpawnY(), 
+                    true
                 );
                 bullets.add(bullet);
                 player.shoot();
             }
 
-            // Pause
             if (input.consumePause()) {
                 gameState = GameState.PAUSED;
             }
 
-            // Escape to menu
             if (input.consumeEscape()) {
                 gameState = GameState.MENU;
             }
@@ -389,10 +461,18 @@ public class GamePanel extends JPanel implements ActionListener {
         // Enable anti-aliasing for smoother graphics
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
+        // Draw starfield background for menu screens
+        if (gameState == GameState.MENU || gameState == GameState.CONTROLS) {
+            drawStarfield(g2d);
+        }
+
         // Draw based on current state
         switch (gameState) {
             case MENU:
                 drawMenu(g2d);
+                break;
+            case CONTROLS:
+                drawControls(g2d);
                 break;
             case PLAYING:
                 drawGame(g2d);
@@ -413,6 +493,15 @@ public class GamePanel extends JPanel implements ActionListener {
     }
 
     /**
+     * Draw animated starfield background
+     */
+    private void drawStarfield(Graphics2D g2d) {
+        for (Star star : stars) {
+            star.render(g2d);
+        }
+    }
+
+    /**
      * Helper method to draw centered text
      */
     private void drawCenteredString(Graphics2D g2d, String text, int y) {
@@ -425,21 +514,193 @@ public class GamePanel extends JPanel implements ActionListener {
      * Draw main menu
      */
     private void drawMenu(Graphics2D g2d) {
+        int centerX = Constants.WINDOW_WIDTH / 2;
+
         // Title
-        g2d.setColor(Color.GREEN);
-        g2d.setFont(new Font("Arial", Font.BOLD, 60));
-        drawCenteredString(g2d, "Space Invaders", Constants.WINDOW_HEIGHT / 3);
+        g2d.setColor(new Color(0, 255, 0));
+        g2d.setFont(new Font("Arial", Font.BOLD, 72));
+        drawCenteredString(g2d, "SPACE", 120);
+
+        g2d.setColor(new Color(255, 255, 255));
+        g2d.setFont(new Font("Arial", Font.BOLD, 72));
+        drawCenteredString(g2d, "INVADERS", 200);
+
+        // Animated aliens
+        drawMenuAliens(g2d, centerX, 260);
+
+        // Menu options
+        int menuStartY = 340;
+        int menuSpacing = 50;
+
+        String[] menuOptions = {"PLAY GAME", "CONTROLS", "EXIT"};
+
+        for (int i = 0; i < menuOptions.length; i++) {
+            int y = menuStartY + i * menuSpacing;
+
+            if (i == menuSelection) {
+                // Selected option - highlighted
+                g2d.setColor(new Color(0, 0, 0, 150));
+                int boxWidth = 250;
+                int boxHeight = 40;
+                g2d.fillRect(centerX - boxWidth / 2, y - 28, boxWidth, boxHeight);
+
+                g2d.setColor(new Color(0, 255, 0));
+                g2d.setFont(new Font("Arial", Font.BOLD, 28));
+
+                // Draw selection arrows
+                g2d.drawString(">", centerX - 120, y);
+                g2d.drawString("<", centerX + 100, y);
+            } else {
+                // Unselected option
+                g2d.setColor(new Color(150, 150, 150));
+                g2d.setFont(new Font("Arial", Font.PLAIN, 24));
+            }
+
+            drawCenteredString(g2d, menuOptions[i], y);
+        }
 
         // Instructions
-        g2d.setColor(Color.WHITE);
-        g2d.setFont(new Font("Arial", Font.PLAIN, 24));
-        drawCenteredString(g2d, "Press ENTER to play", Constants.WINDOW_HEIGHT / 2);
+        g2d.setColor(new Color(100, 100, 100));
+        g2d.setFont(new Font("Arial", Font.PLAIN, 16));
+        drawCenteredString(g2d, "Use UP/DOWN to select, ENTER to confirm", 480);
 
-        // Controls info
+        //High score
+        g2d.setColor(new Color(255, 255, 0));
+        g2d.setFont(new Font("Arial", Font.BOLD, 18));
+        g2d.drawString("HIGH SCORE: " + String.format("%05d", highScore), 20, Constants.WINDOW_HEIGHT - 40);
+
+        // FPS display
+        if (showFps) {
+            g2d.setColor(Color.YELLOW);
+            g2d.setFont(new Font("Arial", Font.PLAIN, 14));
+            g2d.drawString("FPS: " + fps, Constants.WINDOW_WIDTH - 70, Constants.WINDOW_HEIGHT - 10);
+        }
+
+        // Credits
+        g2d.setColor(new Color(80, 80, 80));
+        g2d.setFont(new Font("Arial", Font.PLAIN, 12));
+        drawCenteredString(g2d, "Created by JorgeCreator19", Constants.WINDOW_HEIGHT - 15);
+    }
+
+    /**
+     * Draw animated aliens in menu
+     */
+    private void drawMenuAliens(Graphics2D g2d, int centerX, int y) {
+        // Draw 5 aliens in a row with animation
+        int alienSpacing = 60;
+        int startX = centerX - (alienSpacing * 2);
+
+        Color[] colors = {
+            new Color(0, 255, 0),   // Green
+            new Color(0, 255, 255), // Cyan
+            new Color(255, 0, 255), // Purple
+            new Color(0, 255, 255), // Cyan
+            new Color(0, 255, 0)    // Green
+        };
+
+        for (int i = 0; i < 5; i++) {
+            int alienX = startX + i * alienSpacing;
+            int alienY = y + (menuAlienTimer == 0 ? 0 : 5); // Bounce animation
+
+            drawMenuAlien(g2d, alienX, alienY, colors[i]);
+        }
+    }
+
+    /**
+     * Draw a single menu alien
+     */
+    private void drawMenuAlien(Graphics2D g2d, int x, int y, Color color) {
+    g2d.setColor(color);
+    int pixel = 3;
+    
+    // Simple alien shape
+    //   ████
+    // ████████
+    // ██ ██ ██
+    // ████████
+    //  █    █
+    
+    // Row 0
+    g2d.fillRect(x + 2*pixel, y, pixel*4, pixel);
+    // Row 1
+    g2d.fillRect(x, y + pixel, pixel*8, pixel);
+    // Row 2
+    g2d.fillRect(x, y + pixel*2, pixel*2, pixel);
+    g2d.fillRect(x + pixel*3, y + pixel*2, pixel*2, pixel);
+    g2d.fillRect(x + pixel*6, y + pixel*2, pixel*2, pixel);
+    // Row 3
+    g2d.fillRect(x, y + pixel*3, pixel*8, pixel);
+    // Row 4
+    g2d.fillRect(x + pixel, y + pixel*4, pixel, pixel);
+    g2d.fillRect(x + pixel*6, y + pixel*4, pixel, pixel);
+    }
+
+    /**
+     * Draw controls screen
+     */
+    private void drawControls(Graphics2D g2d) {
+        // Title
+        g2d.setColor(new Color(0, 255, 0));
+        g2d.setFont(new Font("Arial", Font.BOLD, 48));
+        drawCenteredString(g2d, "CONTROLS", 80);
+
+        // Controls box
+        int boxX = 150;
+        int boxY = 120;
+        int boxWidth = Constants.WINDOW_WIDTH - 300;
+        int boxHeight = 350;
+
+        // Box background
+        g2d.setColor(new Color(0, 255, 0));
+        g2d.drawRect(boxX, boxY, boxWidth, boxHeight);
+
+        // Movement section
+        int leftCol = boxX + 40;
+        int rightCol = boxX + boxWidth - 150;
+        int startY = boxY + 50;
+        int lineHeight = 40;
+
+        g2d.setColor(new Color(255, 255, 0));
+        g2d.setFont(new Font("Arial", Font.BOLD, 22));
+        g2d.drawString("MOVEMENT", leftCol, startY);
+
+        g2d.setColor(Color.WHITE);
         g2d.setFont(new Font("Arial", Font.PLAIN, 18));
-        drawCenteredString(g2d, "← → or A D to move", Constants.WINDOW_HEIGHT / 2 + 60);
-        drawCenteredString(g2d, "ESPACE to Shoot", Constants.WINDOW_HEIGHT / 2 + 90);
-        drawCenteredString(g2d, "P to Pause", Constants.WINDOW_HEIGHT / 2 + 120);
+        
+        g2d.drawString("Move Left", leftCol, startY + lineHeight);
+        g2d.drawString("A  or  ←", rightCol, startY + lineHeight);
+        
+        g2d.drawString("Move Right", leftCol, startY + lineHeight * 2);
+        g2d.drawString("D  or  →", rightCol, startY + lineHeight * 2);
+
+        // Actions section
+        g2d.setColor(new Color(255, 255, 0));
+        g2d.setFont(new Font("Arial", Font.BOLD, 22));
+        g2d.drawString("ACTIONS", leftCol, startY + lineHeight * 3 + 20);
+
+        g2d.setColor(Color.WHITE);
+        g2d.setFont(new Font("Arial", Font.PLAIN, 18));
+        
+        g2d.drawString("Shoot", leftCol, startY + lineHeight * 4 + 20);
+        g2d.drawString("SPACE", rightCol, startY + lineHeight * 4 + 20);
+        
+        g2d.drawString("Pause", leftCol, startY + lineHeight * 5 + 20);
+        g2d.drawString("P", rightCol, startY + lineHeight * 5 + 20);
+        
+        g2d.drawString("Back to Menu", leftCol, startY + lineHeight * 6 + 20);
+        g2d.drawString("ESC", rightCol, startY + lineHeight * 6 + 20);
+
+        // Back instruction
+        g2d.setColor(new Color(100, 100, 100));
+        g2d.setFont(new Font("Arial", Font.PLAIN, 16));
+        drawCenteredString(g2d, "Press ENTER or ESC to go back", 520);
+
+        // FPS display
+        if (showFps) {
+            g2d.setColor(Color.YELLOW);
+            g2d.setFont(new Font("Arial", Font.PLAIN, 14));
+            g2d.drawString("FPS: " + fps, Constants.WINDOW_WIDTH - 70, Constants.WINDOW_HEIGHT - 10);
+        }
     }
 
     /**
