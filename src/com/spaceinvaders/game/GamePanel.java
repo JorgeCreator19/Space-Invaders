@@ -4,6 +4,7 @@ import com.spaceinvaders.entities.*;
 import com.spaceinvaders.utils.Constants;
 import com.spaceinvaders.utils.Settings;
 import com.spaceinvaders.utils.SoundManager;
+import com.spaceinvaders.utils.ScoreManager;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -51,6 +52,9 @@ public class GamePanel extends JPanel implements ActionListener {
     /* HIGH SCORE */
     private int highScore = 0;
 
+    /* SCORE MANAGER */
+    private ScoreManager scoreManager;
+
     /* ANIMATED ALIENS FOR MENU */
     private int menuAlienFrame = 0;
     private int menuAlienTimer = 0;
@@ -92,9 +96,10 @@ public class GamePanel extends JPanel implements ActionListener {
         // Enable double buffering for smoother rendering
         setDoubleBuffered(true);
 
-        // Initialize settings and sound
+        // Initialize settings, sound, and score manager
         settings = Settings.getInstance();
         soundManager = SoundManager.getInstance();
+        scoreManager = ScoreManager.getInstance();
 
         // Initialize stars based on settings
         initStars();
@@ -137,6 +142,9 @@ public class GamePanel extends JPanel implements ActionListener {
         wave = 1;
         gameState = GameState.MENU;
         menuSelection = 0;
+
+        // Load high score from file
+        highScore = scoreManager.getHighScore();
 
         // FPS counter init
         fps = 0;
@@ -312,8 +320,8 @@ public class GamePanel extends JPanel implements ActionListener {
 
         // GAME OVER state
         if (gameState == GameState.GAME_OVER) {
-            // Update high score
-            if (score > highScore) {
+            // Check high score (in case it wasn't checked yet)
+            if (scoreManager.checkAndUpdateHighScore(score)) {
                 highScore = score;
             }
             
@@ -467,6 +475,13 @@ public class GamePanel extends JPanel implements ActionListener {
         // Check lose condition (aliens reached bottom)
         if (alienFormation.hasReachedBottom()) {
             lives = 0;
+            soundManager.stopBackgroundMusic();
+            soundManager.playGameOver();
+
+            // Check and save high score 
+            if (scoreManager.checkAndUpdateHighScore(score)) {
+                highScore = score;
+            }
             gameState = GameState.GAME_OVER;
         }
     }
@@ -544,6 +559,12 @@ public class GamePanel extends JPanel implements ActionListener {
                 if (lives <= 0) {
                     soundManager.stopBackgroundMusic();
                     soundManager.playGameOver();
+
+                    // Check and save high score
+                    if (scoreManager.checkAndUpdateHighScore(score)) {
+                        highScore = score;  // Update local variable too
+                    }
+
                     gameState = GameState.GAME_OVER;
                 }
                 break;
@@ -1050,21 +1071,34 @@ public class GamePanel extends JPanel implements ActionListener {
         // Dark red background
         g2d.setColor(new Color(100, 0, 0, 150));
         g2d.fillRect(0, 0, Constants.WINDOW_WIDTH, Constants.WINDOW_HEIGHT);
-
+    
         // Game over text
         g2d.setColor(Color.RED);
         g2d.setFont(new Font("Arial", Font.BOLD, 60));
-        drawCenteredString(g2d, "GAME OVER", Constants.WINDOW_HEIGHT / 2 - 50);
-
+        drawCenteredString(g2d, "GAME OVER", Constants.WINDOW_HEIGHT / 2 - 80);
+    
+        // Check if this is a new high score
+        if (score >= highScore && score > 0) {
+            g2d.setColor(new Color(255, 255, 0));
+            g2d.setFont(new Font("Arial", Font.BOLD, 28));
+            drawCenteredString(g2d, "★ NEW HIGH SCORE! ★", Constants.WINDOW_HEIGHT / 2 - 30);
+        }
+    
         // Final score
         g2d.setColor(Color.WHITE);
         g2d.setFont(new Font("Arial", Font.BOLD, 30));
         drawCenteredString(g2d, "Final Score: " + score, Constants.WINDOW_HEIGHT / 2 + 20);
-
+    
+        // High score
+        g2d.setColor(new Color(255, 255, 0));
+        g2d.setFont(new Font("Arial", Font.PLAIN, 22));
+        drawCenteredString(g2d, "High Score: " + highScore, Constants.WINDOW_HEIGHT / 2 + 60);
+    
         // Instructions
+        g2d.setColor(Color.WHITE);
         g2d.setFont(new Font("Arial", Font.PLAIN, 24));
-        drawCenteredString(g2d, "Press ENTER to Restart", Constants.WINDOW_HEIGHT / 2 + 70);
-        drawCenteredString(g2d, "Press ESC for Menu", Constants.WINDOW_HEIGHT / 2 + 110);
+        drawCenteredString(g2d, "Press ENTER to Restart", Constants.WINDOW_HEIGHT / 2 + 110);
+        drawCenteredString(g2d, "Press ESC for Menu", Constants.WINDOW_HEIGHT / 2 + 150);
     }
 
     /**
