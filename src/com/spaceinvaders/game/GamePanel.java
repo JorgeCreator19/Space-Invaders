@@ -2,10 +2,9 @@ package com.spaceinvaders.game;
 
 import com.spaceinvaders.entities.*;
 import com.spaceinvaders.utils.Constants;
+import com.spaceinvaders.utils.ScoreManager;
 import com.spaceinvaders.utils.Settings;
 import com.spaceinvaders.utils.SoundManager;
-import com.spaceinvaders.utils.ScoreManager;
-
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -817,71 +816,249 @@ public class GamePanel extends JPanel implements ActionListener {
     }
 
     /**
-     * Draw controls screen
+     * Draw controls screen with score guide
      */
     private void drawControls(Graphics2D g2d) {
-        // Title
+        // TITLE
         g2d.setColor(new Color(0, 255, 0));
         g2d.setFont(new Font("Arial", Font.BOLD, 48));
-        drawCenteredString(g2d, "CONTROLS", 80);
+        drawCenteredString(g2d, "CONTROLS", 60);
 
-        // Controls box
-        int boxX = 150;
-        int boxY = 120;
-        int boxWidth = Constants.WINDOW_WIDTH - 300;
-        int boxHeight = 350;
+        // CONTROLS BOX (Left side)
+        int controlsBoxX = 30;
+        int controlsBoxY = 100;
+        int controlsBoxWidth = 350;
+        int controlsBoxHeight = 280;
 
         // Box background
+        g2d.setColor(new Color(20, 20, 40));
+        g2d.fillRect(controlsBoxX, controlsBoxY, controlsBoxWidth, controlsBoxHeight);
+
+        // Box border
         g2d.setColor(new Color(0, 255, 0));
-        g2d.drawRect(boxX, boxY, boxWidth, boxHeight);
+        g2d.drawRect(controlsBoxX, controlsBoxY, controlsBoxWidth, controlsBoxHeight);
 
-        // Movement section
-        int leftCol = boxX + 40;
-        int rightCol = boxX + boxWidth - 150;
-        int startY = boxY + 50;
-        int lineHeight = 40;
-
+        // Controls title
         g2d.setColor(new Color(255, 255, 0));
-        g2d.setFont(new Font("Arial", Font.BOLD, 22));
-        g2d.drawString("MOVEMENT", leftCol, startY);
+        g2d.setFont(new Font("Arial", Font.BOLD, 20));
+        g2d.drawString("KEYBOARD", controlsBoxX + 20, controlsBoxY + 35);
+
+        // Controls content
+        int leftCol = controlsBoxX + 20;
+        int rightCol = controlsBoxX + controlsBoxWidth - 100;
+        int startY = controlsBoxY + 70;
+        int lineHeight = 35;
 
         g2d.setColor(Color.WHITE);
-        g2d.setFont(new Font("Arial", Font.PLAIN, 18));
-        
-        g2d.drawString("Move Left", leftCol, startY + lineHeight);
-        g2d.drawString("A  or  ←", rightCol, startY + lineHeight);
-        
-        g2d.drawString("Move Right", leftCol, startY + lineHeight * 2);
-        g2d.drawString("D  or  →", rightCol, startY + lineHeight * 2);
+        g2d.setFont(new Font("Arial", Font.PLAIN, 16));
 
-        // Actions section
-        g2d.setColor(new Color(255, 255, 0));
-        g2d.setFont(new Font("Arial", Font.BOLD, 22));
-        g2d.drawString("ACTIONS", leftCol, startY + lineHeight * 3 + 20);
+        // Movement
+        g2d.drawString("Move Left", leftCol, startY);
+        g2d.setColor(new Color(0, 255, 0));
+        g2d.drawString("A  /  ←", rightCol, startY);
 
         g2d.setColor(Color.WHITE);
-        g2d.setFont(new Font("Arial", Font.PLAIN, 18));
-        
-        g2d.drawString("Shoot", leftCol, startY + lineHeight * 4 + 20);
-        g2d.drawString("SPACE", rightCol, startY + lineHeight * 4 + 20);
-        
-        g2d.drawString("Pause", leftCol, startY + lineHeight * 5 + 20);
-        g2d.drawString("P", rightCol, startY + lineHeight * 5 + 20);
-        
-        g2d.drawString("Back to Menu", leftCol, startY + lineHeight * 6 + 20);
-        g2d.drawString("ESC", rightCol, startY + lineHeight * 6 + 20);
+        g2d.drawString("Move Right", leftCol, startY + lineHeight);
+        g2d.setColor(new Color(0, 255, 0));
+        g2d.drawString("D  /  →", rightCol, startY + lineHeight);
 
-        // Back instruction
+        g2d.setColor(Color.WHITE);
+        g2d.drawString("Shoot", leftCol, startY + lineHeight * 2);
+        g2d.setColor(new Color(0, 255, 0));
+        g2d.drawString("SPACE", rightCol, startY + lineHeight * 2);
+
+        g2d.setColor(Color.WHITE);
+        g2d.drawString("Pause Game", leftCol, startY + lineHeight * 3);
+        g2d.setColor(new Color(0, 255, 0));
+        g2d.drawString("P", rightCol + 30, startY + lineHeight * 3);
+
+        g2d.setColor(Color.WHITE);
+        g2d.drawString("Back to Menu", leftCol, startY + lineHeight * 4);
+        g2d.setColor(new Color(0, 255, 0));
+        g2d.drawString("ESC", rightCol + 20, startY + lineHeight * 4);
+
+        // SCORE GUIDE BOX (Right side)
+        int scoreBoxX = 420;
+        int scoreBoxY = 100;
+        int scoreBoxWidth = 350;
+        int scoreBoxHeight = 280;
+
+        // Box background
+        g2d.setColor(new Color(20, 20, 40));
+        g2d.fillRect(scoreBoxX, scoreBoxY, scoreBoxWidth, scoreBoxHeight);
+
+        // Box border
+        g2d.setColor(new Color(0, 255, 0));
+        g2d.drawRect(scoreBoxX, scoreBoxY, scoreBoxWidth, scoreBoxHeight);
+
+        // Score title
+        g2d.setColor(new Color(255, 255, 0));
+        g2d.setFont(new Font("Arial", Font.BOLD, 20));
+        g2d.drawString("SCORE GUIDE", scoreBoxX + 20, scoreBoxY + 35);
+
+        // Score content with pixel aliens
+        int alienX = scoreBoxX + 30;
+        int pointsX = scoreBoxX + scoreBoxWidth - 80;
+        int alienStartY = scoreBoxY + 70;
+        int alienSpacing = 50;
+
+        // Mystery Ship (Row 0)
+        g2d.setColor(new Color(255, 0, 0));
+        drawMiniMysteryShip(g2d, alienX, alienStartY - 10);
+        g2d.setColor(Color.WHITE);
+        g2d.setFont(new Font("Arial", Font.PLAIN, 16));
+        g2d.drawString("Mystery Ship", alienX + 50, alienStartY + 5);
+        g2d.setColor(new Color(255, 255, 0));
+        g2d.setFont(new Font("Arial", Font.BOLD, 18));
+        g2d.drawString("? ? ?", pointsX, alienStartY + 5);
+
+        // Top Alien - Purple (Row 1)
+        g2d.setColor(new Color(255, 0, 255));
+        drawMiniAlien(g2d, alienX, alienStartY + alienSpacing - 10, 0);
+        g2d.setColor(Color.WHITE);
+        g2d.setFont(new Font("Arial", Font.PLAIN, 16));
+        g2d.drawString("Octopus", alienX + 50, alienStartY + alienSpacing + 5);
+        g2d.setColor(new Color(255, 0, 255));
+        g2d.setFont(new Font("Arial", Font.BOLD, 18));
+        g2d.drawString(Constants.SCORE_ROW_3 + " pts", pointsX, alienStartY + alienSpacing + 5);
+
+        // Middle Alien - Cyan (Row 2)
+        g2d.setColor(new Color(0, 255, 255));
+        drawMiniAlien(g2d, alienX, alienStartY + alienSpacing * 2 - 10, 1);
+        g2d.setColor(Color.WHITE);
+        g2d.setFont(new Font("Arial", Font.PLAIN, 16));
+        g2d.drawString("Crab", alienX + 50, alienStartY + alienSpacing * 2 + 5);
+        g2d.setColor(new Color(0, 255, 255));
+        g2d.setFont(new Font("Arial", Font.BOLD, 18));
+        g2d.drawString(Constants.SCORE_ROW_2 + " pts", pointsX, alienStartY + alienSpacing * 2 + 5);
+
+        // Bottom Alien - Green (Row 3)
+        g2d.setColor(new Color(0, 255, 0));
+        drawMiniAlien(g2d, alienX, alienStartY + alienSpacing * 3 - 10, 2);
+        g2d.setColor(Color.WHITE);
+        g2d.setFont(new Font("Arial", Font.PLAIN, 16));
+        g2d.drawString("Squid", alienX + 50, alienStartY + alienSpacing * 3 + 5);
+        g2d.setColor(new Color(0, 255, 0));
+        g2d.setFont(new Font("Arial", Font.BOLD, 18));
+        g2d.drawString(Constants.SCORE_ROW_1 + " pts", pointsX, alienStartY + alienSpacing * 3 + 5);
+
+        // TIPS BOX (Bottom)
+        int tipsBoxX = 30;
+        int tipsBoxY = 400;
+        int tipsBoxWidth = 740;
+        int tipsBoxHeight = 120;
+
+        // Box background
+        g2d.setColor(new Color(20, 20, 40));
+        g2d.fillRect(tipsBoxX, tipsBoxY, tipsBoxWidth, tipsBoxHeight);
+
+        // Box border
+        g2d.setColor(new Color(0, 255, 0));
+        g2d.drawRect(tipsBoxX, tipsBoxY, tipsBoxWidth, tipsBoxHeight);
+
+        // Tips title
+        g2d.setColor(new Color(255, 255, 0));
+        g2d.setFont(new Font("Arial", Font.BOLD, 20));
+        g2d.drawString("TIPS", tipsBoxX + 20, tipsBoxY + 30);
+
+        // Tips content
+        g2d.setColor(Color.WHITE);
+        g2d.setFont(new Font("Arial", Font.PLAIN, 14));
+        g2d.drawString("• Shoot the Mystery Ship for bonus points (100, 150, 200, or 300)!", tipsBoxX + 20, tipsBoxY + 55);
+        g2d.drawString("• Aliens speed up as you destroy them - be careful when few remain!", tipsBoxX + 20, tipsBoxY + 75);
+        g2d.drawString("• Top row aliens are worth more points but harder to hit.", tipsBoxX + 20, tipsBoxY + 95);
+
+        // BACK INSTRUCTION
         g2d.setColor(new Color(100, 100, 100));
         g2d.setFont(new Font("Arial", Font.PLAIN, 16));
-        drawCenteredString(g2d, "Press ENTER or ESC to go back", 520);
+        drawCenteredString(g2d, "Press ENTER or ESC to go back", 555);
 
         // FPS display
-        if (showFps) {
+        if (settings.isShowFps()) {
             g2d.setColor(Color.YELLOW);
             g2d.setFont(new Font("Arial", Font.PLAIN, 14));
             g2d.drawString("FPS: " + fps, Constants.WINDOW_WIDTH - 70, Constants.WINDOW_HEIGHT - 10);
         }
+    }
+
+    /**
+    * Draw a mini alien for the score guide
+    * @param type 0 = top (octopus), 1 = middle (crab), 2 = bottom (squid)
+    */
+    private void drawMiniAlien(Graphics2D g2d, int x, int y, int type) {
+
+        int p = 2;  // Pixel size for mini alien
+
+        switch (type) {
+            case 0:  // Octopus (top)
+                // Row 0:     ████
+                g2d.fillRect(x + 4*p, y, p*4, p);
+                // Row 1:   ████████
+                g2d.fillRect(x + 2*p, y + p, p*8, p);
+                // Row 2:   ██ ██ ██
+                g2d.fillRect(x + 2*p, y + p*2, p*2, p);
+                g2d.fillRect(x + 5*p, y + p*2, p*2, p);
+                g2d.fillRect(x + 8*p, y + p*2, p*2, p);
+                // Row 3:   ████████
+                g2d.fillRect(x + 2*p, y + p*3, p*8, p);
+                // Row 4:    █    █
+                g2d.fillRect(x + 3*p, y + p*4, p, p);
+                g2d.fillRect(x + 8*p, y + p*4, p, p);
+                break;
+
+            case 1:  // Crab (middle)
+                // Row 0:   █      █
+                g2d.fillRect(x + 2*p, y, p, p);
+                g2d.fillRect(x + 9*p, y, p, p);
+                // Row 1:    ██████
+                g2d.fillRect(x + 3*p, y + p, p*6, p);
+                // Row 2:   ████████
+                g2d.fillRect(x + 2*p, y + p*2, p*8, p);
+                // Row 3:   █ ████ █
+                g2d.fillRect(x + 2*p, y + p*3, p, p);
+                g2d.fillRect(x + 4*p, y + p*3, p*4, p);
+                g2d.fillRect(x + 9*p, y + p*3, p, p);
+                // Row 4:   ████████
+                g2d.fillRect(x + 2*p, y + p*4, p*8, p);
+                break;
+
+            case 2:  // Squid (bottom)
+                // Row 0:     ████
+                g2d.fillRect(x + 4*p, y, p*4, p);
+                // Row 1:   ████████
+                g2d.fillRect(x + 2*p, y + p, p*8, p);
+                // Row 2:   ████████
+                g2d.fillRect(x + 2*p, y + p*2, p*8, p);
+                // Row 3:    █ ██ █
+                g2d.fillRect(x + 3*p, y + p*3, p, p);
+                g2d.fillRect(x + 5*p, y + p*3, p*2, p);
+                g2d.fillRect(x + 8*p, y + p*3, p, p);
+                // Row 4:   █      █
+                g2d.fillRect(x + 2*p, y + p*4, p, p);
+                g2d.fillRect(x + 9*p, y + p*4, p, p);
+                break;
+        }
+    }
+
+    /**
+     * Draw a mini mystery ship for the score guide
+     */
+    private void drawMiniMysteryShip(Graphics2D g2d, int x, int y) {
+        int p = 2;  // Pixel size
+        
+        // Row 0: Top dome
+        g2d.fillRect(x + 4*p, y, p*6, p);
+        // Row 1: Upper body
+        g2d.fillRect(x + 2*p, y + p, p*10, p);
+        // Row 2: Main body (widest)
+        g2d.fillRect(x, y + p*2, p*14, p);
+        // Row 3: Bottom
+        g2d.fillRect(x + 2*p, y + p*3, p*10, p);
+        // Row 4: Lights
+        g2d.setColor(Color.YELLOW);
+        g2d.fillRect(x + 3*p, y + p*4, p, p);
+        g2d.fillRect(x + 6*p, y + p*4, p, p);
+        g2d.fillRect(x + 9*p, y + p*4, p, p);
     }
 
     /**
