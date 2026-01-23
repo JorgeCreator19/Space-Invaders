@@ -206,17 +206,13 @@ public class AlienFormation {
         // Calculate speed based on percentage of aliens remaining
         // More aliens dead = faster speed, but with a cap
         if (aliveCount > 40) {
-            speed = Constants.ALIEN_SPEED;          // Normal speed (55-41 aliens)
-        } else if (aliveCount > 25) {
-            speed = Constants.ALIEN_SPEED + 1;      // Slightly faster (40-26 aliens)
-        } else if (aliveCount > 10) {
-            speed = Constants.ALIEN_SPEED + 1;      // Faster (25-11 aliens)
-        } else if (aliveCount > 5) {
-            speed = Constants.ALIEN_SPEED + 2;      // Fast (10-6 aliens)
-        } else {
-            speed = Constants.ALIEN_SPEED + 2;      // Very fast (5-1 aliens)
+            speed = Constants.ALIEN_SPEED;      // Normal speed (55-41 aliens)
+        } else if (aliveCount < 20) {                      
+            speed = Constants.ALIEN_SPEED + 1;  // Slightly faster (40-20 aliens)                             
+        } else if (aliveCount < 8) {
+            speed = Constants.ALIEN_SPEED + 1;  // Faster (19-1 aliens)
         }
-    }
+    }   
 
     /**
      * Reset formation for new wave or game

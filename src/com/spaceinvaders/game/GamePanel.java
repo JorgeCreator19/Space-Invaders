@@ -5,6 +5,7 @@ import com.spaceinvaders.utils.Constants;
 import com.spaceinvaders.utils.ScoreManager;
 import com.spaceinvaders.utils.Settings;
 import com.spaceinvaders.utils.SoundManager;
+
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -64,6 +65,7 @@ public class GamePanel extends JPanel implements ActionListener {
     private List<Bullet> bullets;
     private MysteryShip mysteryShip;
     private List<Explosion> explosions;
+    private Shield[] shields;
 
     /* FPS COUNTER */
     private int fps;
@@ -136,6 +138,9 @@ public class GamePanel extends JPanel implements ActionListener {
         mysteryShip = null;
         explosions = new ArrayList<>();
 
+        // Create shields
+        createShields();
+
         score = 0;
         lives = Constants.INITIAL_LIVES;
         wave = 1;
@@ -161,6 +166,11 @@ public class GamePanel extends JPanel implements ActionListener {
         mysteryShip = null;
         explosions.clear();
 
+        // Reset shields
+        for (Shield shield : shields) {
+            shield.reset();
+        }
+
         score = 0;
         lives = Constants.INITIAL_LIVES;
         wave = 1;
@@ -181,6 +191,11 @@ public class GamePanel extends JPanel implements ActionListener {
         mysteryShip = null;
         explosions.clear();
         player.reset();
+
+        // Reset shields for new wave
+        for (Shield shield : shields) {
+            shield.reset();
+        }
     }
 
     /**
@@ -489,6 +504,18 @@ public class GamePanel extends JPanel implements ActionListener {
      * Check all collisions
      */
     private void checkCollisions() {
+        // Player bullets bs shields
+        for (Bullet bullet : bullets) {
+            if (!bullet.isActive()) continue;
+
+            for (Shield shield : shields) {
+                if (shield.checkBulletCollision(bullet)) {
+                    bullet.destroy();
+                    break; // Bullet can only hit one shield
+                }
+            }
+        }
+
         // Player bullets vs aliens
         for (Bullet bullet : bullets) {
             if (!bullet.isPlayerBullet() || !bullet.isActive()) continue;
@@ -569,7 +596,16 @@ public class GamePanel extends JPanel implements ActionListener {
                 break;
             }
         }
-    }
+
+        // Aliens bullets vs shields
+        for (Alien alien : alienFormation.getAliens()) {
+            if (!alien.isActive()) continue;
+
+            for (Shield shield : shields) {
+                shield.checkAlienCollision(alien);
+            }
+        }
+    }   
 
     /**
      * Helper to get alien color based on row
@@ -657,6 +693,11 @@ public class GamePanel extends JPanel implements ActionListener {
             mysteryShip.render(g2d);
         }
 
+        // Draw shields
+        for (Shield shield : shields) {
+            shield.render(g2d);
+        }
+
         // Draw bullets
         for (Bullet bullet : bullets) {
             if (bullet.isActive()) {
@@ -682,12 +723,24 @@ public class GamePanel extends JPanel implements ActionListener {
     }
 
     /**
-     * Helper method to draw centered text
+     * Create shields at evenly spaced positions
      */
-    private void drawCenteredString(Graphics2D g2d, String text, int y) {
-        int width = g2d.getFontMetrics().stringWidth(text);
-        int x = (Constants.WINDOW_WIDTH - width) / 2;
-        g2d.drawString(text, x, y);
+    private void createShields() {
+        shields = new Shield[Constants.SHIELD_COUNT];
+        
+        // Calculate spacing
+        int shieldWidth = 88;  // 22 blocks * 4 pixels
+        int totalWidth = Constants.WINDOW_WIDTH;
+        int spacing = (totalWidth - (Constants.SHIELD_COUNT * shieldWidth)) / (Constants.SHIELD_COUNT + 1);
+        
+        // Shield Y position (above player)
+        int shieldY = Constants.WINDOW_HEIGHT - Constants.SHIELD_Y_OFFSET - 64;
+        
+        // Create each shield
+        for (int i = 0; i < Constants.SHIELD_COUNT; i++) {
+            int shieldX = spacing + i * (shieldWidth + spacing);
+            shields[i] = new Shield(shieldX, shieldY);
+        }
     }
 
     /**
@@ -1295,6 +1348,15 @@ public class GamePanel extends JPanel implements ActionListener {
         g2d.setColor(Color.GREEN);
         g2d.setFont(new Font("Arial", Font.PLAIN, 24));
         drawCenteredString(g2d, "Press ENTER for Next Wave", Constants.WINDOW_HEIGHT / 2 + 30);
+    }
+
+    /**
+     * Helper method to draw centered text
+     */
+    private void drawCenteredString(Graphics2D g2d, String text, int y) {
+        int width = g2d.getFontMetrics().stringWidth(text);
+        int x = (Constants.WINDOW_WIDTH - width) / 2;
+        g2d.drawString(text, x, y);
     }
 
     /**

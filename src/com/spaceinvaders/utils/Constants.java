@@ -58,13 +58,14 @@ public final class Constants {
     public static final int MYSTERY_SHIP_SPEED = 3; // 3 px per frame
     public static final double MYSTERY_SHIP_SPAWN_CHANCE = 0.001; // 0.1% chance per frame
 
+    /* SHIELD SETTINGS */ 
+    public static final int SHIELD_COUNT = 4;           // Number of shields
+    public static final int SHIELD_Y_OFFSET = 120;      // Distance from bottom of screen
+
     /* SCORING */
     public static final int SCORE_ROW_1 = 10; // Botton rows = 10 score
     public static final int SCORE_ROW_2 = 30; // Midle rows = 30 score
     public static final int SCORE_ROW_3 = 50; // Top row = 50 score
-
-    /* RESOURCE PATHS */
-    public static final String ICON_PATH = "/resources/icons/game_icon.png"; // Window icon path
 
     private Constants() {
         // Private constructor
