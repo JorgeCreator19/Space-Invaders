@@ -6,6 +6,7 @@ import com.spaceinvaders.utils.ScoreManager;
 import javax.swing.JFrame;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import javax.swing.ImageIcon;
 
 /**
  * Main game window class
@@ -18,6 +19,9 @@ public class GameFrame extends JFrame {
     public GameFrame() {
         // Show the game title
         setTitle(Constants.GAME_TITLE);
+
+        // Set window icon
+        setWindowIcon();
 
         // Create and add GamePanel
         GamePanel gamePanel = new GamePanel();
@@ -45,5 +49,34 @@ public class GameFrame extends JFrame {
 
         // Request focus for keyboard input
         gamePanel.requestFocusInWindow();
+    }
+
+    /**
+     * Sets the window icon - tries multiple locations
+     */
+    private void setWindowIcon() {
+        String[] possiblePaths = {
+            "resources/images/space_invaders_icon.png",
+            "resources/icons/game_icon.png",
+            "icon.png",
+            "space_invaders_icon.png",
+            "src/resources/images/space_invaders_icon.png"
+        };
+
+        for (String path : possiblePaths) {
+            java.io.File iconFile = new java.io.File(path);
+            if (iconFile.exists()) {
+                try {
+                    ImageIcon icon = new ImageIcon(iconFile.getAbsolutePath());
+                    setIconImage(icon.getImage());
+                    System.out.println("Icon loaded from: " + path);
+                    return;
+                } catch (Exception e) {
+                    System.err.println("Error loading icon from " + path + ": " + e.getMessage());
+                }
+            }
+        }
+
+        System.err.println("Icon not found in any location. Using default icon.");
     }
 }

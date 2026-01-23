@@ -63,6 +63,9 @@ public final class Constants {
     public static final int SCORE_ROW_2 = 30; // Midle rows = 30 score
     public static final int SCORE_ROW_3 = 50; // Top row = 50 score
 
+    /* RESOURCE PATHS */
+    public static final String ICON_PATH = "/resources/icons/game_icon.png"; // Window icon path
+
     private Constants() {
         // Private constructor
     }
