@@ -1311,7 +1311,7 @@ public class GamePanel extends JPanel implements ActionListener {
         if (score >= highScore && score > 0) {
             g2d.setColor(new Color(255, 255, 0));
             g2d.setFont(new Font("Arial", Font.BOLD, 28));
-            drawCenteredString(g2d, "★ NEW HIGH SCORE! ★", Constants.WINDOW_HEIGHT / 2 - 30);
+            drawCenteredString(g2d, "NEW HIGH SCORE!", Constants.WINDOW_HEIGHT / 2 - 30);
         }
     
         // Final score
