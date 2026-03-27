@@ -21,6 +21,15 @@ public final class Constants {
     public static final int QUALITY_MEDIUM = 1;
     public static final int QUALITY_LOW = 2;
 
+    /* SETTINGS FPS */
+    public static final int FPS_60 = 60;
+    public static final int FPS_120 = 120;
+    public static final int FPS_UNLIMITED = 0; // 0 means no delay between frames
+
+    public static final int FPS_OPTION_60 = 0;
+    public static final int FPS_OPTION_120 = 1;
+    public static final int FPS_OPTION_UNLIMITED = 2;
+
     /* MENU SETTINGS */
     public static final int STAR_COUNT = 100; // Number of stars in background
 

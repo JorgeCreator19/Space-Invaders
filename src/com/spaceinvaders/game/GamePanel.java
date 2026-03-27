@@ -5,7 +5,6 @@ import com.spaceinvaders.utils.Constants;
 import com.spaceinvaders.utils.ScoreManager;
 import com.spaceinvaders.utils.Settings;
 import com.spaceinvaders.utils.SoundManager;
-
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -38,9 +37,10 @@ public class GamePanel extends JPanel implements ActionListener {
     private static final int SETTINGS_MUSIC_VOL = 0;
     private static final int SETTINGS_SFX_VOL = 1;
     private static final int SETTINGS_GRAPHICS = 2;
-    private static final int SETTINGS_SHOW_FPS = 3;
-    private static final int SETTINGS_BACK = 4;
-    private static final int SETTINGS_OPTIONS = 5;
+    private static final int SETTINGS_FPS_LIMIT = 3;
+    private static final int SETTINGS_SHOW_FPS = 4;
+    private static final int SETTINGS_BACK = 5;
+    private static final int SETTINGS_OPTIONS = 6;
 
     /* SOUND & SETTINGS */
     private SoundManager soundManager;
@@ -263,19 +263,13 @@ public class GamePanel extends JPanel implements ActionListener {
             if (input.consumeEnter()) {
                 soundManager.playMenuConfirm();
                 switch (menuSelection) {
-                    case MENU_PLAY:
-                        startGame();
-                        break;
-                    case MENU_CONTROLS:
-                        gameState = GameState.CONTROLS;
-                        break;
-                    case MENU_SETTINGS:
+                    case MENU_PLAY -> startGame();
+                    case MENU_CONTROLS -> gameState = GameState.CONTROLS;
+                    case MENU_SETTINGS -> {
                         gameState = GameState.SETTINGS;
                         settingsSelection = 0;
-                        break;
-                    case MENU_EXIT:
-                        System.exit(0);
-                        break;
+                    }
+                    case MENU_EXIT -> System.exit(0);
                 }
             }
             return;
@@ -305,11 +299,15 @@ public class GamePanel extends JPanel implements ActionListener {
             }
             if (input.consumeEnter()) {
                 if (settingsSelection == SETTINGS_BACK) {
-                    soundManager.playMenuConfirm();
-                    gameState = GameState.MENU;
+                soundManager.playMenuConfirm();
+                gameState = GameState.MENU;
                 } else if (settingsSelection == SETTINGS_GRAPHICS) {
                     settings.cycleGraphicsQuality();
-                    initStars();  // Reinitialize stars with new count
+                    initStars();
+                    soundManager.playMenuConfirm();
+                } else if (settingsSelection == SETTINGS_FPS_LIMIT) {
+                    settings.cycleFpsOption();
+                    updateTimerSpeed();  // Apply new FPS
                     soundManager.playMenuConfirm();
                 } else if (settingsSelection == SETTINGS_SHOW_FPS) {
                     settings.toggleShowFps();
@@ -405,20 +403,39 @@ public class GamePanel extends JPanel implements ActionListener {
     }
 
     /**
-     * Adjust setting value (for sliders)
+     * Adjust setting value (for sliders and options)
      */
     private void adjustSetting(int direction) {
         switch (settingsSelection) {
-            case SETTINGS_MUSIC_VOL:
+            case SETTINGS_MUSIC_VOL -> {
                 float newMusicVol = soundManager.getMusicVolume() + (direction * 0.1f);
                 soundManager.setMusicVolume(newMusicVol);
-                break;
-            case SETTINGS_SFX_VOL:
+            }
+            case SETTINGS_SFX_VOL -> {
                 float newSfxVol = soundManager.getSfxVolume() + (direction * 0.1f);
                 soundManager.setSfxVolume(newSfxVol);
                 soundManager.playMenuSelect();  // Test the new volume
+            }
+            case SETTINGS_FPS_LIMIT -> {
+                if (direction > 0) {
+                    settings.cycleFpsOption();
+                } else {
+                    settings.cycleFpsOptionReverse();
+                }
+                updateTimerSpeed();
+                soundManager.playMenuSelect();
                 break;
-        }
+            }
+        }   
+    }
+
+    /**
+     * Update game timer speed based on FPS settings
+     */
+    private void updateTimerSpeed() {
+        int delay = settings.getTimerDelay();
+        gameTimer.setDelay(delay);
+        System.out.println("FPS set to: " + settings.getFpsOptionName() + " (delay: " + delay + "ms)");
     }
 
     /**
@@ -642,38 +659,30 @@ public class GamePanel extends JPanel implements ActionListener {
 
         // Draw based on current state
         switch (gameState) {
-            case MENU:
-                // Clear and draw menu
+            case MENU -> // Clear and draw menu
                 drawMenu(g2d);
-                break;
 
-            case CONTROLS:
-                // Clear and draw controls screen
+            case CONTROLS -> // Clear and draw controls screen
                 drawControls(g2d);
-                break;
 
-            case SETTINGS:
-                // drawSettings handles its own background clearing
+            case SETTINGS -> // drawSettings handles its own background clearing
                 drawSettings(g2d);
-                break;
-            case PLAYING:
-                drawGame(g2d);
-                break;
+            case PLAYING -> drawGame(g2d);
 
-            case PAUSED:
+            case PAUSED -> {
                 drawGame(g2d);
                 drawPauseOverlay(g2d);
-                break;
+            }
 
-            case GAME_OVER:
+            case GAME_OVER -> {
                 drawGame(g2d);
                 drawGameOverOverlay(g2d);
-                break;
+            }
 
-            case VICTORY:
+            case VICTORY -> {
                 drawGame(g2d);
                 drawVictoryOverlay(g2d);
-                break;
+            }
         }
     }
 
@@ -1134,7 +1143,7 @@ public class GamePanel extends JPanel implements ActionListener {
         int boxX = 100;
         int boxY = 120;
         int boxWidth = Constants.WINDOW_WIDTH - 200;
-        int boxHeight = 380;
+        int boxHeight = 390;
 
         // Box background
         g2d.setColor(new Color(20, 20, 40));
@@ -1154,6 +1163,7 @@ public class GamePanel extends JPanel implements ActionListener {
             "Music Volume",
             "SFX Volume", 
             "Graphics Quality",
+            "FPS Limit",
             "Show FPS",
             "BACK TO MENU"
         };
@@ -1183,27 +1193,18 @@ public class GamePanel extends JPanel implements ActionListener {
             }
 
             switch (i) {
-                case SETTINGS_MUSIC_VOL:
-                    drawVolumeBar(g2d, rightCol, y - 15, soundManager.getMusicVolume());
-                    break;
-                case SETTINGS_SFX_VOL:
-                    drawVolumeBar(g2d, rightCol, y - 15, soundManager.getSfxVolume());
-                    break;
-                case SETTINGS_GRAPHICS:
-                    g2d.drawString("< " + settings.getGraphicsQualityName() + " >", rightCol, y);
-                    break;
-                case SETTINGS_SHOW_FPS:
-                    g2d.drawString(settings.isShowFps() ? "ON" : "OFF", rightCol + 50, y);
-                    break;
-                case SETTINGS_BACK:
-                    // No value for back button
-                    break;
+                case SETTINGS_MUSIC_VOL -> drawVolumeBar(g2d, rightCol, y - 15, soundManager.getMusicVolume());
+                case SETTINGS_SFX_VOL -> drawVolumeBar(g2d, rightCol, y - 15, soundManager.getSfxVolume());
+                case SETTINGS_GRAPHICS -> g2d.drawString("< " + settings.getGraphicsQualityName() + " >", rightCol, y);
+                case SETTINGS_FPS_LIMIT -> g2d.drawString("<" + settings.getFpsOptionName() + ">", rightCol, y);
+                case SETTINGS_SHOW_FPS -> g2d.drawString(settings.isShowFps() ? "ON" : "OFF", rightCol + 50, y);
+                case SETTINGS_BACK -> {} // No value for back button
             }
 
             // Instructions
             g2d.setColor(new Color(100, 100, 100));
             g2d.setFont(new Font("Arial", Font.PLAIN, 16));
-            drawCenteredString(g2d, "UP/DOWN to select, LEFT/RIGHT to adjust, ENTER to confirm", 540);
+            drawCenteredString(g2d, "UP/DOWN to select, LEFT/RIGHT to adjust, ENTER to confirm", 560);
         
             // FPS
             if (settings.isShowFps()) {
