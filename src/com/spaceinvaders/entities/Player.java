@@ -7,6 +7,7 @@ import java.awt.image.BufferedImage;
 
 /**
  * The player spaceship - Classic Space Invaders style
+ * Uses delta time for consistent movement
  */
 public class Player extends GameObject {
     // Movement flags
@@ -105,15 +106,17 @@ public class Player extends GameObject {
     }
 
     @Override
-    public void update() {
-        // Move left if flag is set
+    public void update(double deltaTime) {
+        // Calculate movement based on delta time
+        double movement = Constants.PLAYER_BULLET_SPEED_PER_SEC * deltaTime;
+
         if (movingLeft) {
-            x -= Constants.PLAYER_SPEED; // Decrease x by Player speed
+            x -= movement; // Decrease x by Player speed
         }
 
         // Move right if flag is set
         if (movingRight) {
-            x += Constants.PLAYER_SPEED; // Increase x by Player speed
+            x += movement; // Increase x by Player speed
         }
 
 

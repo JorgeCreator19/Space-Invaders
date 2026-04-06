@@ -3,12 +3,12 @@ package com.spaceinvaders.entities;
 import com.spaceinvaders.utils.Constants;
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.util.Random;
 import java.awt.image.BufferedImage;
+import java.util.Random;
 
 /**
  * Mystery UFO ship - bonus enemy that flies across the top
- * This enemy appears randomly and awards bonus points
+ * This enemy appears randomly and awards bonus points and uses delta time for consistent speed
  */
 public class MysteryShip extends GameObject {
     
@@ -30,7 +30,6 @@ public class MysteryShip extends GameObject {
 
     // Spawn settings
     public static final double SPAWN_CHANCE = Constants.MYSTERY_SHIP_SPAWN_CHANCE; // 0.1% chance per frame
-    public static final int SPEED = Constants.MYSTERY_SHIP_SPEED;
 
     // Random for points values
     private static Random random = new Random();
@@ -54,10 +53,10 @@ public class MysteryShip extends GameObject {
         // Set velocity and direction
         if (fromLeft) {
             this.direction = 1;
-            this.velocityX = SPEED;
+            this.velocityX = Constants.MYSTERY_SHIP_SPEED_PER_SEC;
         } else {
             this.direction = -1;
-            this.velocityX = -SPEED;
+            this.velocityX = -Constants.MYSTERY_SHIP_SPEED_PER_SEC;
         }
 
         // Random point value 
@@ -116,9 +115,9 @@ public class MysteryShip extends GameObject {
     }
 
     @Override
-    public void update() {
-        // Move horizontally
-        x += velocityX;
+    public void update(double deltaTime) {
+        // Move based on velocity and delta time
+        x += velocityX * deltaTime;
 
         // Desactive when off screen
         if (direction == 1 && x > Constants.WINDOW_WIDTH) {
@@ -150,7 +149,10 @@ public class MysteryShip extends GameObject {
     /**
      * Static method to check if UFO should spawn this frame
      */
-    public static boolean shouldSpawn() { return random.nextDouble() < SPAWN_CHANCE; }
+    public static boolean shouldSpawn(double deltaTime) {
+        double adjustedChance = SPAWN_CHANCE * deltaTime * 60; // Normalize to 60 FPS
+        return random.nextDouble() < adjustedChance; 
+    }
 
     /**
      * Static method to create a new UFO (random direction)

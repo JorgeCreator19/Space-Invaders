@@ -30,21 +30,44 @@ public final class Constants {
     public static final int FPS_OPTION_120 = 1;
     public static final int FPS_OPTION_UNLIMITED = 2;
 
+    /* BASE SPEED (pixels per second at 60 FPS) */
+    // These are the "reference" speeds - actual movement uses delta time
+    public static final double BASE_FPS = 60.0;
+
+    // Player: 5 pixels/frame at 60fps = 300 pixels/second
+    public static final double PLAYER_SPEED_PER_SEC = 300.0;
+
+    // Player bullet: 8 pixels/frame at 60fps = 480 pixels/second
+    public static final double PLAYER_BULLET_SPEED_PER_SEC = 480.0;
+
+    // Alien bullet: 5 pixels/frame at 60fps = 300 pixels/second
+    public static final double ALIEN_BULLET_SPEED_PER_SEC = 300.0;
+
+    // Alien base speed: 1 pixel/frame at 60fps = 60 pixels/second
+    public static final double ALIEN_SPEED_PER_SEC = 60.0;
+
+    // Alien drop distance (instant, not per second)
+    public static final double ALIEN_DROP_DISTANCE = 20.0;
+
+    // Mystery ship: 3 pixels/frame at 60fps = 180 pixels/second
+    public static final double MYSTERY_SHIP_SPEED_PER_SEC = 180.0;
+
+    // Star speed range (pixels per second)
+    public static final double STAR_MIN_SPEED_PER_SEC = 30.0;
+    public static final double STAR_MAX_SPEED_PER_SEC = 180.0;
+
     /* MENU SETTINGS */
     public static final int STAR_COUNT = 100; // Number of stars in background
 
     /* PLAYER SETTINGS */
     public static final int PLAYER_WIDTH = 50; // 50 px
     public static final int PLAYER_HEIGHT = 30; // 30 px
-    public static final int PLAYER_SPEED = 5; // 5 px per frame
     public static final int PLAYER_Y_OFFSET = 50; // Distance from botton
     public static final long PLAYER_SHOOT_COOLDOWN = 400; // 400 ms between shots
 
     /* BULLET SETTINGS */
     public static final int BULLET_WIDTH = 4; // 4px
     public static final int BULLET_HEIGHT = 12; // 12px
-    public static final int PLAYER_BULLET_SPEED = -8; // Bullet negative moves UP
-    public static final int ALIEN_BULLET_SPEED = 5; // Bullet positive moves DOWN
 
     /* ALIEN SETTINGS */
     public static final int ALIEN_WIDTH = 40; // 40 px
@@ -55,8 +78,6 @@ public final class Constants {
     public static final int ALIEN_SPACING_Y = 10; // Vertical gap
     public static final int ALIEN_START_X = 50; // In left margin
     public static final int ALIEN_START_Y = 80; // In top margin
-    public static final int ALIEN_SPEED = 1; // Alien movement speed
-    public static final int ALIEN_DROP_DISTANCE = 20; // Px to drop when reversing
     public static final double ALIEN_SHOOT_CHANCE_BASE = 0.007; // Starting chance (0.7%)
     public static final double ALIEN_SHOOT_CHANCE_INCREMENT = 0.002; // Increase per wave (0.2%)
     public static final double ALIEN_SHOOT_CHANCE_MAX = 0.02; // Maximum chance (2%)
@@ -64,7 +85,6 @@ public final class Constants {
     /* MYSTERY SHIP */
     public static final int MYSTERY_SHIP_WIDTH = 60; // 60 px
     public static final int MYSTERY_SHIP_HEIGHT = 25; // 25 px
-    public static final int MYSTERY_SHIP_SPEED = 3; // 3 px per frame
     public static final double MYSTERY_SHIP_SPAWN_CHANCE = 0.001; // 0.1% chance per frame
 
     /* SHIELD SETTINGS */ 

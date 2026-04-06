@@ -6,15 +6,15 @@ import java.awt.image.BufferedImage;
 
 /**
  * Explosion animation - plays when aliens or player are destroyed
- * Classic Space Invaders style explosion
+ * Classic Space Invaders style explosion - uses delta time
  */
 public class Explosion extends GameObject{
     
     // Animation settings
     private int currentFrame;
-    private int frameCounter;
-    private static final int FRAMES_PER_SPRITE = 5; // How long each frame show
-    private static final int TOTAL_FRAME = 3;  // Total animation frames
+    private double frameTimer;
+    private static final double  FRAME_DURATION = 0.08; // How long each frame show
+    private static final int TOTAL_FRAMES = 3;  // Total animation frames
 
     // Pixel size
     private static final int PIXEL = 3;
@@ -37,7 +37,7 @@ public class Explosion extends GameObject{
 
         this.color = color;
         this.currentFrame = 0;
-        this.frameCounter = 0;
+        this.frameTimer = 0;
 
         // Create sprites only once
         if (!spritesCreated) {
@@ -50,10 +50,10 @@ public class Explosion extends GameObject{
      * Create all explosion animation frames
      */
     private static void createSprites() {
-        sprites = new BufferedImage[TOTAL_FRAME];
+        sprites = new BufferedImage[TOTAL_FRAMES];
 
         // We'll create the sprites with white, then tint when drawing
-        for (int i = 0; i < TOTAL_FRAME; i++) {
+        for (int i = 0; i < TOTAL_FRAMES; i++) {
             sprites[i] = createExplosionFrame(i);
         }
     }
@@ -72,7 +72,7 @@ public class Explosion extends GameObject{
 
         switch (frame) {
             // Frame 0: Small explosion - center burst
-            case 0:
+            case 0 -> {
                 drawExplosionPixel(g, centerX, centerY);
                 drawExplosionPixel(g, centerX - 4, centerY);
                 drawExplosionPixel(g, centerX + 4, centerY);
@@ -82,10 +82,9 @@ public class Explosion extends GameObject{
                 drawExplosionPixel(g, centerX + 4, centerY - 4);
                 drawExplosionPixel(g, centerX - 4, centerY + 4);
                 drawExplosionPixel(g, centerX + 4, centerY + 4);
-                break;
-
+            }
             // Frame 1: Medium explosion - expanding
-            case 1:
+            case 1 -> {
                 // Center
                 drawExplosionPixel(g, centerX, centerY);
                 // Inner ring
@@ -103,10 +102,9 @@ public class Explosion extends GameObject{
                 drawExplosionPixel(g, centerX + 10, centerY);
                 drawExplosionPixel(g, centerX, centerY - 10);
                 drawExplosionPixel(g, centerX, centerY + 10);
-                break;
-            
+            }
             // Frame 2: Large explosion - scattered particles
-            case 2:
+            case 2 -> {
                 // Scattered particles
                 drawExplosionPixel(g, centerX - 12, centerY - 12);
                 drawExplosionPixel(g, centerX + 12, centerY - 12);
@@ -121,9 +119,8 @@ public class Explosion extends GameObject{
                 drawExplosionPixel(g, centerX + 6, centerY + 4);
                 drawExplosionPixel(g, centerX + 4, centerY - 6);
                 drawExplosionPixel(g, centerX - 4, centerY + 6);
-                break;
+            }
         }
-        
         g.dispose();
         return sprite;
     }
@@ -136,16 +133,16 @@ public class Explosion extends GameObject{
     }
 
     @Override
-    public void update() {
-        frameCounter++;
+    public void update(double deltaTime) {
+        frameTimer += deltaTime;
 
         // Advance animation frame
-        if (frameCounter >= FRAMES_PER_SPRITE) {
-            frameCounter = 0;
+        if (frameTimer >= FRAME_DURATION) {
+            frameTimer = 0;
             currentFrame++;
 
             // Animation finished
-            if (currentFrame >= FRAMES_PER_SPRITE) {
+            if (currentFrame >= TOTAL_FRAMES) {
                 active = false;
             }
         }
@@ -153,7 +150,7 @@ public class Explosion extends GameObject{
 
     @Override
     public void render(Graphics2D g2d) {
-        if (currentFrame < TOTAL_FRAME) {
+        if (currentFrame < TOTAL_FRAMES) {
             // Draw the sprite with color tint
             g2d.drawImage(sprites[currentFrame], (int) x, (int) y, null);
 
@@ -171,7 +168,7 @@ public class Explosion extends GameObject{
         int centerY = (int) y + 20;
         
         switch (frame) {
-            case 0:
+            case 0 -> {
                 drawPixel(g2d, centerX, centerY);
                 drawPixel(g2d, centerX - 4, centerY);
                 drawPixel(g2d, centerX + 4, centerY);
@@ -181,9 +178,9 @@ public class Explosion extends GameObject{
                 drawPixel(g2d, centerX + 4, centerY - 4);
                 drawPixel(g2d, centerX - 4, centerY + 4);
                 drawPixel(g2d, centerX + 4, centerY + 4);
-                break;
+            }
                 
-            case 1:
+            case 1 -> {
                 drawPixel(g2d, centerX, centerY);
                 drawPixel(g2d, centerX - 6, centerY);
                 drawPixel(g2d, centerX + 6, centerY);
@@ -197,9 +194,9 @@ public class Explosion extends GameObject{
                 drawPixel(g2d, centerX + 10, centerY);
                 drawPixel(g2d, centerX, centerY - 10);
                 drawPixel(g2d, centerX, centerY + 10);
-                break;
+            }
                 
-            case 2:
+            case 2 -> {
                 drawPixel(g2d, centerX - 12, centerY - 12);
                 drawPixel(g2d, centerX + 12, centerY - 12);
                 drawPixel(g2d, centerX - 12, centerY + 12);
@@ -212,7 +209,7 @@ public class Explosion extends GameObject{
                 drawPixel(g2d, centerX + 6, centerY + 4);
                 drawPixel(g2d, centerX + 4, centerY - 6);
                 drawPixel(g2d, centerX - 4, centerY + 6);
-                break;
+            }
         }
     }
     

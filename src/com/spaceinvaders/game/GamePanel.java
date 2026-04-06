@@ -55,9 +55,13 @@ public class GamePanel extends JPanel implements ActionListener {
     /* SCORE MANAGER */
     private ScoreManager scoreManager;
 
+    /* DELTA TIME */
+    private long lastUpdateTime;
+    private double deltaTime;
+
     /* ANIMATED ALIENS FOR MENU */
     private int menuAlienFrame = 0;
-    private int menuAlienTimer = 0;
+    private double menuAlienTimer = 0;
 
     /* GAME OBJECTS */
     private Player player;
@@ -112,8 +116,12 @@ public class GamePanel extends JPanel implements ActionListener {
         // Initialize game
         initGame();
 
+        // Initialize delta time
+        lastUpdateTime = System.nanoTime();
+        deltaTime = 0;
+
         // Start game loop timer
-        gameTimer = new Timer(Constants.GAME_SPEED, this);
+        gameTimer = new Timer(settings.getTimerDelay(), this);
         gameTimer.start();
     }
 
@@ -203,23 +211,33 @@ public class GamePanel extends JPanel implements ActionListener {
      */
     @Override
     public void actionPerformed(ActionEvent e) {
+        // Calculate delta time (in seconds)
+        long currentTime = System.nanoTime();
+        deltaTime = (currentTime - lastUpdateTime) / 1_000_000_000.0; // Convert to seconds
+        lastUpdateTime = currentTime;
+
+        // Cap delta time to prevent huge jumps (for example, when window is minimized)
+        if (deltaTime > 0.1) {
+            deltaTime = 0.1;
+        }
+
         // Calculate FPS
         frameCount++;
-        long currentTime = System.currentTimeMillis();
-        if (currentTime - lastFpsTime >= 1000) {
+        long currentMillis = System.currentTimeMillis();
+        if (currentMillis - lastFpsTime >= 1000) {
             fps = frameCount;
             frameCount = 0;
-            lastFpsTime = currentTime;
+            lastFpsTime = currentMillis;
         }
 
         // Update stars (always, for background animation)
         for (Star star : stars) {
-            star.update();
+            star.update(deltaTime);
         }
 
         // Update menu alien animation
-        menuAlienTimer++;
-        if (menuAlienTimer >= 30) {
+        menuAlienTimer += deltaTime;
+        if (menuAlienTimer >= 0.5) {    // 0.5 seconds per frame
             menuAlienTimer = 0;
             menuAlienFrame = (menuAlienFrame + 1) % 2;
         }
@@ -443,13 +461,13 @@ public class GamePanel extends JPanel implements ActionListener {
      */
     private void update() {
         // Update player
-        player.update();
+        player.update(deltaTime);
 
         // Update alien formation
-        alienFormation.update();
+        alienFormation.update(deltaTime);
 
         // Alien shooting
-        Bullet alienBullet = alienFormation.tryShoot();
+        Bullet alienBullet = alienFormation.tryShoot(deltaTime);
         if (alienBullet != null) {
             bullets.add(alienBullet);
             soundManager.playAlienShoot();
@@ -457,15 +475,15 @@ public class GamePanel extends JPanel implements ActionListener {
 
         // Update bullets
         for (Bullet bullet : bullets) {
-            bullet.update();
+            bullet.update(deltaTime);
         }
 
         // Update mystery ship
         if (mysteryShip != null && mysteryShip.isActive()) {
-            mysteryShip.update();
+            mysteryShip.update(deltaTime);
         } else {
             // Try to spawn mystery ship
-            if (MysteryShip.shouldSpawn()) {
+            if (MysteryShip.shouldSpawn(deltaTime)) {
                 mysteryShip = MysteryShip.spawn();
             }
         }
@@ -474,7 +492,7 @@ public class GamePanel extends JPanel implements ActionListener {
         Iterator<Explosion> explosionIt = explosions.iterator();
         while (explosionIt.hasNext()) {
             Explosion explosion = explosionIt.next();
-            explosion.update();
+            explosion.update(deltaTime);
             if (!explosion.isActive()) {
                 explosionIt.remove();
             }

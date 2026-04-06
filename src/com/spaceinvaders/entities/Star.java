@@ -1,13 +1,12 @@
 package com.spaceinvaders.entities;
 
+import com.spaceinvaders.utils.Constants;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.util.Random;
 
-import com.spaceinvaders.utils.Constants;
-
 /**
- * Animated star for menu background
+ * Animated star for menu background - uses delta time
  */
 public class Star {
     private double x;
@@ -32,7 +31,8 @@ public class Star {
     public void reset(boolean randomY) {
         x = random.nextInt(Constants.WINDOW_WIDTH);
         y = randomY ? random.nextInt(Constants.WINDOW_HEIGHT) : -5;
-        speed = 0.5 + random.nextDouble() * 2; // 0.5 to 2.5
+        speed = Constants.STAR_MIN_SPEED_PER_SEC + random.nextDouble() * 
+        (Constants.STAR_MAX_SPEED_PER_SEC - Constants.STAR_MIN_SPEED_PER_SEC);
         size = random.nextInt(3) + 1; // 1 to 3 pixels
         brightness = 100 + random.nextInt(155); // 100 to 255
     }
@@ -40,8 +40,8 @@ public class Star {
     /**
      * Update star position (move down slowly)
      */
-    public void update() {
-        y += speed;
+    public void update(double deltaTime) {
+        y += speed * deltaTime;
 
         // Reset when off screen
         if (y > Constants.WINDOW_HEIGHT) {

@@ -7,7 +7,7 @@ import java.awt.image.BufferedImage;
 
 /**
  * Single alien enemy with OPTIMIZED pixel art rendering
- * Uses cached sprites for better performance
+ * Uses cached sprites for better performance and uses delta time for consistent speed
  */
 public class Alien extends GameObject {
     
@@ -30,6 +30,10 @@ public class Alien extends GameObject {
     private static BufferedImage spriteMiddle;
     private static BufferedImage spriteBottom;
     private static boolean spritesCreated = false;
+
+    // Flag to track if we need to drop this frame
+    private boolean shouldDrop = false;
+    private double dropAmount = 0;
 
     /**
      * @param x starting X position
@@ -85,15 +89,9 @@ public class Alien extends GameObject {
 
         // Draw based on type
         switch (type) {
-            case 0:
-                drawTopAlienPixels(g);
-                break;
-            case 1:
-                drawMiddleAlienPixels(g);
-                break;
-            case 2:
-                drawBottomAlienPixels(g);
-                break;
+            case 0 -> drawTopAlienPixels(g);
+            case 1 -> drawMiddleAlienPixels(g);
+            case 2 -> drawBottomAlienPixels(g);
         }
 
         g.dispose();
@@ -101,13 +99,16 @@ public class Alien extends GameObject {
     }
 
     @Override
-    public void update() {
-        // Move based on velocity (set by AlienFormation)
-        x += velocityX;
-        y += velocityY;
+    public void update(double deltaTime) {
+        // Move horizontally based on velocity and delta time
+        x += velocityX * deltaTime;
 
-        // Reset Y velocity after dropping
-        velocityY = 0;
+        // Drop if needed (instant drop, not time-based)
+        if (shouldDrop) {
+            y += dropAmount;
+            shouldDrop = false;
+            dropAmount = 0;
+        }
     }
 
     @Override
@@ -124,6 +125,14 @@ public class Alien extends GameObject {
         }
 
         g2d.drawImage(sprite, (int) x, (int) y, null);
+    }
+
+    /**
+     * Set the alien to drop on next update
+     */
+    public void setDrop(double amount) {
+        this.shouldDrop = true;
+        this.dropAmount = amount;
     }
 
     /**

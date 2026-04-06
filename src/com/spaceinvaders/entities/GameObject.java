@@ -5,6 +5,7 @@ import java.awt.Rectangle;
 
 /**
  * Base class for all game entities (player, bullets and aliens)
+ * Uses delta time for consistent movement across different FPS
  */
 public abstract class GameObject {
     // Position
@@ -15,7 +16,7 @@ public abstract class GameObject {
     protected int width;
     protected int height;
 
-    // Movement
+    // Velocity (pixels per second)
     protected double velocityX;
     protected double velocityY;
 
@@ -40,7 +41,7 @@ public abstract class GameObject {
     }
 
     // Abstract methods - children must implement
-    public abstract void update();
+    public abstract void update(double deltaTime);
     public abstract void render(Graphics2D g2d);
 
     /**

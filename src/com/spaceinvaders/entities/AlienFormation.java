@@ -1,15 +1,15 @@
 package com.spaceinvaders.entities;
 
+import com.spaceinvaders.utils.Constants;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import com.spaceinvaders.utils.Constants;
-
 /**
  * Manage the entire alien formation
  * Handles movement pattern: right -> down -> left -> down -> repeat
+ * Also uses delta time for speed
  */
 public class AlienFormation {
     
@@ -20,7 +20,7 @@ public class AlienFormation {
     private int direction;
 
     // Current speed (this increase as aliens die)
-    private int speed;
+    private double speed;
 
     // Random for alien shooting
     private Random random;
@@ -34,7 +34,7 @@ public class AlienFormation {
     public AlienFormation() {
         aliens = new ArrayList<>();
         direction = 1;
-        speed = Constants.ALIEN_SPEED;
+        speed = Constants.ALIEN_SPEED_PER_SEC;
         random = new Random();
         shootChance = Constants.ALIEN_SHOOT_CHANCE_BASE;
 
@@ -64,7 +64,7 @@ public class AlienFormation {
     /**
      * Update all aliens - movement and direction changes
      */
-    public void update() {
+    public void update(double deltaTime) {
         // Check if any alien hit the edge
         boolean shouldReverse = false;
         boolean shouldDrop = false;
@@ -101,9 +101,9 @@ public class AlienFormation {
 
             // Drop down if reversing
             if (shouldDrop) {
-                alien.setVelocityY(Constants.ALIEN_DROP_DISTANCE);
+                alien.setDrop(Constants.ALIEN_DROP_DISTANCE);
             }
-            alien.update();
+            alien.update(deltaTime);
         }
     }
 
@@ -122,13 +122,16 @@ public class AlienFormation {
      * Try to shoot - returns a bullet from random alien, or null
      * No ArrayList creation every frame for better optimitzation
      */
-    public Bullet tryShoot() {
-        // Random chance to shoot first (skip expensive loop if not shooting)
-        if (random.nextDouble() >= shootChance) {
+    public Bullet tryShoot(double deltaTime) {
+        // Adjust shoot chance based on delta time
+        // This ensures consistent shooting rate regardless of FPS
+        double adjustedChance = shootChance * deltaTime * 60; // Normalize to 60 FPS
+
+        if (random.nextDouble() >= adjustedChance) {
             return null;
         }
 
-        // Count active aliens and pick a random index
+        // Count active aliens and pick a random index  
         int alienCount = getAliveCount();
         if (alienCount == 0) {
             return null;
@@ -206,11 +209,15 @@ public class AlienFormation {
         // Calculate speed based on percentage of aliens remaining
         // More aliens dead = faster speed, but with a cap
         if (aliveCount > 40) {
-            speed = Constants.ALIEN_SPEED;      // Normal speed (55-41 aliens)
-        } else if (aliveCount < 20) {                      
-            speed = Constants.ALIEN_SPEED + 1;  // Slightly faster (40-20 aliens)                             
-        } else if (aliveCount < 8) {
-            speed = Constants.ALIEN_SPEED + 1;  // Faster (19-1 aliens)
+            speed = Constants.ALIEN_SPEED_PER_SEC;
+        } else if (aliveCount > 25) {
+            speed = Constants.ALIEN_SPEED_PER_SEC * 1.3;
+        } else if (aliveCount > 10) {
+            speed = Constants.ALIEN_SPEED_PER_SEC * 1.7;
+        } else if (aliveCount > 5) {
+            speed = Constants.ALIEN_SPEED_PER_SEC * 2.4;
+        } else {
+            speed = Constants.ALIEN_SPEED_PER_SEC * 3.0;
         }
     }   
 
@@ -219,7 +226,7 @@ public class AlienFormation {
      */
     public void reset() {
         direction = 1;
-        speed = Constants.ALIEN_SPEED;
+        speed = Constants.ALIEN_SPEED_PER_SEC;
         createFormation();
     }
 
@@ -228,7 +235,7 @@ public class AlienFormation {
      */
     public void fullReset() {
         direction = 1;
-        speed = Constants.ALIEN_SPEED;
+        speed = Constants.ALIEN_SPEED_PER_SEC;
         shootChance = Constants.ALIEN_SHOOT_CHANCE_BASE;  // Reset to starting difficulty
         createFormation();
     }

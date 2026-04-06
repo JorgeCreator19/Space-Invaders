@@ -6,6 +6,7 @@ import java.awt.Graphics2D;
 
 /**
  * Bullet class - Green for player, Red for aliens
+ * Uses delta time for consistent speed
  */
 public class Bullet extends GameObject {
 
@@ -28,16 +29,16 @@ public class Bullet extends GameObject {
 
         // Set velocity based on who shot it 
         if (isPlayerBullet) {
-            this.velocityY = Constants.PLAYER_BULLET_SPEED; // Player bullet speed (UP)
+            this.velocityY = Constants.PLAYER_BULLET_SPEED_PER_SEC; // Player bullet speed (UP)
         } else {
-            this.velocityY = Constants.ALIEN_BULLET_SPEED; // Player bullet speed (DOWN)
+            this.velocityY = Constants.PLAYER_BULLET_SPEED_PER_SEC; // Player bullet speed (DOWN)
         }
     }
 
     @Override
-    public void update() {
-        // Move bullet
-        y += velocityY;
+    public void update(double deltaTime) {
+        // Move bullet based on velocity of delta time
+        y += velocityY * deltaTime;
 
         // Desactivate if off screen (if is top or bottom)
         if (y < -height || y > Constants.WINDOW_HEIGHT) {
